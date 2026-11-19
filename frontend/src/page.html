@@ -2,9 +2,6 @@
   <div class="home-page">
     <section class="landing-hero" aria-labelledby="landing-title">
       <div class="landing-hero-inner">
-        <figure class="landing-photo">
-          <img src="/assets/career-signpost.png" width="850" height="567" fetchpriority="high" alt="Three wooden signs marked Career pointing in different directions against a blue sky">
-        </figure>
         <div class="landing-copy">
           <p class="landing-kicker">Internships &amp; entry-level jobs</p>
           <h1 id="landing-title">Find your first <em>opportunity.</em></h1>
@@ -14,6 +11,10 @@
             <a class="button landing-outline" routerLink="/forum">Career Q&amp;A</a>
           </div>
         </div>
+        <figure class="landing-photo">
+          <img src="/assets/career-signpost.png" width="850" height="567" fetchpriority="high" alt="Three wooden signs marked Career pointing in different directions against a blue sky">
+          <figcaption>Explore your next career step.</figcaption>
+        </figure>
       </div>
       <div class="wrap landing-trust">
         <span>Admin-approved listings</span><span>Application tracking</span><span>Community Q&amp;A</span>
@@ -41,14 +42,26 @@
         </div>
       </div>
     </section>
-    <section class="landing-banner" aria-label="For employers">
+    <section class="landing-banner" aria-labelledby="employer-title">
       <div class="wrap landing-banner-inner">
-        <div><p class="eyebrow">FOR EMPLOYERS</p><h2>Hiring for an early-career role?</h2><p>Post an opening and manage applications from your company dashboard.</p></div>
-        @if (api.user(); as user) {
-          @if (user.role === 'company') {<a class="button" routerLink="/company/jobs">Manage job listings</a>}
-        } @else {
-          <a class="button" routerLink="/register">Create an employer account</a>
-        }
+        <div class="landing-employer-copy">
+          <p class="eyebrow">FOR EMPLOYERS</p>
+          <h2 id="employer-title">Hiring for an early-career role?</h2>
+          <p>Reach students looking for internships and entry-level work.</p>
+          @if (api.user(); as user) {
+            @if (user.role === 'company') {<a class="button" routerLink="/company/jobs">Manage job listings</a>}
+          } @else {
+            <a class="button" routerLink="/register">Create an employer account</a>
+          }
+        </div>
+        <div class="landing-employer-process">
+          <h3>From posting to interview</h3>
+          <ol>
+            <li>Submit an opening for approval.</li>
+            <li>Review applications in your company dashboard.</li>
+            <li>Share interview details with selected applicants.</li>
+          </ol>
+        </div>
       </div>
     </section>
   </div>
