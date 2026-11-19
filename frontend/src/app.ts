@@ -25,7 +25,8 @@ export const pages = [
       @if (api.user()) { <a routerLink="/dashboard" routerLinkActive="current">Dashboard</a> }
     </nav>
     <div class="account">@if (api.user(); as user) {
-      <span class="handle">{{user.username}}</span><button type="button" class="button small secondary" [disabled]="busy()" (click)="signOut()">Sign out</button>
+      <img class="account-avatar" width="38" height="38" [src]="api.avatarSrc()" [alt]="user.username + ' profile picture'" (error)="api.useDefaultAvatar()">
+      <button type="button" class="button small danger" [disabled]="busy()" (click)="signOut()">Sign out</button>
     } @else { <a class="button small" routerLink="/register">Create account</a><a routerLink="/login">Sign in</a> }</div>
   </div></header>
   <main class="wrap main" id="main"><router-outlet /></main>
@@ -202,6 +203,10 @@ export class Page implements OnInit, OnDestroy {
     this.busy.set(true); this.formErrors.set([]); this.notice.set('');
     try {
       const response = await this.api.post(path, form);
+      const picture = form.get('profile_picture');
+      if (picture instanceof File && picture.size > 0 && ['student-profile', 'company-profile'].includes(this.kind)) {
+        void this.api.refreshAvatar();
+      }
       const pictureInput = element?.querySelector<HTMLInputElement>('input[name="profile_picture"]');
       if (pictureInput) pictureInput.value = '';
       let next = '';

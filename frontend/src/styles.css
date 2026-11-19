@@ -53,6 +53,7 @@ label{display:grid;gap:.35rem;font-weight:690;font-size:.94rem;min-width:0}input
 .brand-accent{flex:none;align-self:flex-start;margin-top:.25rem;color:var(--teal)}
 .top .navbar nav{margin-inline-start:auto;gap:clamp(.4rem,1.15vw,1rem)}
 .top .account{margin-inline-start:0;gap:.9rem}
+.top .account-avatar{display:block;flex:none;width:2.375rem;height:2.375rem;object-fit:cover;border-radius:50%;border:1px solid #a7c8cf;background:#e8eeee}
 .top .navbar nav a,.top .account>a:not(.button){display:inline-flex;align-items:center;min-height:44px;font-size:.875rem;font-weight:600;white-space:nowrap}
 .top .navbar nav a{padding-inline:.9rem;border-radius:.48rem;text-decoration:none}
 .top .navbar nav a:hover{background:#dceff1;color:var(--teal-dark);text-decoration:none}
