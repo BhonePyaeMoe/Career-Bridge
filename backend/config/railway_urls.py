@@ -27,7 +27,7 @@ urlpatterns = [
         r"^(?:login|register|dashboard|"
         r"jobs(?:/[0-9]+(?:/apply)?)?|"
         r"forum(?:/ask|/[0-9]+(?:/edit|/answers/[0-9]+/edit)?)?|"
-        r"student/(?:profile|applications)|"
+        r"student/(?:profile|applications|saved-jobs)|"
         r"company/(?:profile|jobs(?:/new|/[0-9]+/(?:edit|applicants))?|applications/[0-9]+))/?$",
         angular,
     ),

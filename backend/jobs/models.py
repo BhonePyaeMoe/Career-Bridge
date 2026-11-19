@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils import timezone
@@ -60,4 +61,13 @@ class Job(models.Model):
     def __str__(self):
         return f"{self.title} - {self.company.company_name}"
 
-# Create your models here.
+class JobBookmark(models.Model):
+    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="job_bookmarks")
+    job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name="bookmarks")
+    job_title = models.CharField(max_length=150)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=("student", "job"), name="unique_student_job_bookmark"),
+        ]

@@ -26,11 +26,26 @@ class JobSerializer(serializers.ModelSerializer):
                   'deadline', 'skills', 'created_at')
 
 
-class PublicJobDetailSerializer(JobSerializer):
-    already_applied = serializers.BooleanField()
+class PublicJobSerializer(JobSerializer):
+    bookmarked = serializers.BooleanField()
 
     class Meta(JobSerializer.Meta):
-        fields = JobSerializer.Meta.fields + ('description', 'requirements', 'already_applied')
+        fields = JobSerializer.Meta.fields + ('bookmarked',)
+
+
+class SavedJobSerializer(JobSerializer):
+    def to_representation(self, job):
+        if not job.available:
+            # Do not expose new edits to a listing that is no longer public.
+            return {'id': job.pk, 'title': job.saved_title, 'available': False, 'bookmarked': True}
+        return {**super().to_representation(job), 'available': True, 'bookmarked': True}
+
+
+class PublicJobDetailSerializer(PublicJobSerializer):
+    already_applied = serializers.BooleanField()
+
+    class Meta(PublicJobSerializer.Meta):
+        fields = PublicJobSerializer.Meta.fields + ('description', 'requirements', 'already_applied')
 
 
 class CompanyJobSerializer(JobSerializer):

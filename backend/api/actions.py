@@ -19,7 +19,7 @@ from core.models import AuditLog
 from forum.forms import AnswerForm, QuestionForm
 from forum.models import Answer, Question
 from jobs.forms import JobForm
-from jobs.models import Job
+from jobs.models import Job, JobBookmark
 from .profile_pictures import ImageCompanyForm, ImageRegistrationForm, ImageStudentProfileForm
 from .views import owned_applications, public_jobs, require_role
 
@@ -144,6 +144,21 @@ def close_job(request, pk):
     job.save(update_fields=['approval_status', 'updated_at'])
     audit(request.user, 'job_closed', job)
     return Response({'ok': True})
+
+
+@api_view(['POST'])
+def save_bookmark(request, pk):
+    require_role(request, User.Role.STUDENT)
+    job = get_object_or_404(public_jobs(), pk=pk)
+    JobBookmark.objects.get_or_create(student=request.user, job=job, defaults={'job_title': job.title})
+    return Response({'bookmarked': True})
+
+
+@api_view(['POST'])
+def remove_bookmark(request, pk):
+    require_role(request, User.Role.STUDENT)
+    JobBookmark.objects.filter(student=request.user, job_id=pk).delete()
+    return Response({'bookmarked': False})
 
 
 @api_view(['POST'])

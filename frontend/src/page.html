@@ -63,6 +63,20 @@
   @if (notice()) { <p class="notice" role="status">{{notice()}}</p> }
   @if (formErrors().length) { <div class="error" role="alert"><ul>@for (error of formErrors(); track $index) {<li>{{error}}</li>}</ul></div> }
 
+  <ng-template #bookmark let-job>
+    @if (showBookmark()) {
+      <button class="job-bookmark" type="button"
+        [class.is-saved]="job['bookmarked']"
+        [attr.aria-pressed]="api.user()?.role === 'student' ? !!job['bookmarked'] : null"
+        [attr.aria-label]="api.user() ? 'Bookmark ' + job['title'] : 'Sign in to save ' + job['title']"
+        [title]="!api.user() ? 'Sign in to save this job' : job['bookmarked'] ? 'Remove bookmark' : 'Save job'"
+        [disabled]="bookmarkBusy()" (click)="toggleBookmark(job)">
+        <svg viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4.5A1.5 1.5 0 0 1 7.5 3h9A1.5 1.5 0 0 1 18 4.5V21l-6-3.8L6 21z"/></svg>
+      </button>
+    }
+  </ng-template>
+  @if (kind === 'saved-jobs') {<a class="back" routerLink="/jobs">Find jobs</a>}
+
   @if (kind === 'jobs' || kind === 'forum') {
     <form class="card filters" #filters (submit)="filter($event)">
       <label>Search<input name="keyword" [value]="query['keyword'] || ''" [placeholder]="kind === 'jobs' ? 'Title, company or skill' : 'Search questions'"></label>
@@ -83,17 +97,22 @@
   @if (loading()) {<p class="muted" role="status">Loading…</p>} @else if (!readErrors().length) {
     @if (listing(); as list) {
       <p class="muted result-count" aria-live="polite">{{list.count}} {{list.count === 1 ? 'result' : 'results'}}</p>
-      @if (!list.results.length) {<div class="card empty"><h2>No results yet</h2><p>{{kind === 'jobs' || kind === 'forum' ? 'Try changing your search or clearing the filters.' : 'Records will appear here once they are available.'}}</p></div>}
-      <div [class.grid]="kind === 'jobs'" [class.stack]="kind !== 'jobs'">
+      @if (!list.results.length) {<div class="card empty"><h2>{{kind === 'saved-jobs' ? 'No saved jobs yet' : 'No results yet'}}</h2><p>{{kind === 'saved-jobs' ? 'Bookmark opportunities from Find jobs to see them here.' : kind === 'jobs' || kind === 'forum' ? 'Try changing your search or clearing the filters.' : 'Records will appear here once they are available.'}}</p></div>}
+      <div [class.grid]="kind === 'jobs' || kind === 'saved-jobs'" [class.stack]="kind !== 'jobs' && kind !== 'saved-jobs'">
         @for (row of list.results; track row['id']) {
-          <article class="card item">
-            @switch (kind) {
-              @case ('jobs') {
+          <article class="card item" [class.job-bookmark-card]="(kind === 'jobs' || kind === 'saved-jobs') && showBookmark()">
+            @if (kind === 'jobs' || kind === 'saved-jobs') {
+              <ng-container *ngTemplateOutlet="bookmark; context: {$implicit: row}"></ng-container>
+              @if (row['available'] === false) {
+                <span class="pill">Unavailable</span><h2>{{row['title']}}</h2><p class="muted">This listing is no longer available.</p>
+              } @else {
                 <span class="pill">{{label(row['job_type'])}}</span><h2><a [routerLink]="['/jobs',row['id']]">{{row['title']}}</a></h2><p>{{row['company_name']}}</p>
                 <p class="muted">{{label(row['work_mode'])}} @if (row['location']) { · {{row['location']}} }</p>
                 <div class="tags">@for (skill of row['skills']; track skill.id) {<span>{{skill.name}}</span>}</div>
                 <p class="meta">Apply by {{row['deadline'] | date:'mediumDate':'UTC'}}</p>
               }
+            }
+            @switch (kind) {
               @case ('forum') {
                 <h2><a [routerLink]="['/forum',row['id']]">{{row['title']}}</a></h2><p class="excerpt">{{row['body']}}</p>
                 <p class="meta">{{row['author']}} · {{row['created_at'] | date:'mediumDate'}} · {{row['answer_count']}} replies</p>
@@ -128,6 +147,7 @@
           @if (user.role === 'student') {
             <a class="card" routerLink="/student/profile"><h2>My profile</h2><p>Update education, skills and your CV.</p></a>
             <a class="card" routerLink="/student/applications"><h2>My applications</h2><p>Track statuses and interview details.</p></a>
+            <a class="card" routerLink="/student/saved-jobs"><h2>Saved jobs</h2><p>Revisit the opportunities you’ve bookmarked.</p></a>
             <a class="card" routerLink="/jobs"><h2>Find jobs</h2><p>Browse approved opportunities.</p></a>
           } @else if (user.role === 'company') {
             <a class="card" routerLink="/company/profile"><h2>Company profile</h2><p>Update company information and check approval.</p></a>
@@ -140,7 +160,9 @@
 
     @if (kind === 'job') {
       <a class="back" routerLink="/jobs">All jobs</a>
-      <article class="card detail"><span class="pill">{{label(record()['job_type'])}}</span><h2>{{record()['title']}}</h2><p>{{record()['company_name']}} · {{label(record()['work_mode'])}} @if (record()['location']) { · {{record()['location']}} }</p>
+      <article class="card detail" [class.job-bookmark-card]="showBookmark()">
+        <ng-container *ngTemplateOutlet="bookmark; context: {$implicit: record()}"></ng-container>
+        <span class="pill">{{label(record()['job_type'])}}</span><h2>{{record()['title']}}</h2><p>{{record()['company_name']}} · {{label(record()['work_mode'])}} @if (record()['location']) { · {{record()['location']}} }</p>
         <p class="meta">Application deadline: {{record()['deadline'] | date:'mediumDate':'UTC'}}</p>
         <h3>Description</h3><p class="prose">{{record()['description']}}</p><h3>Requirements</h3><p class="prose">{{record()['requirements']}}</p>
         <div class="tags">@for(skill of record()['skills']; track skill.id) {<span>{{skill.name}}</span>}</div>

@@ -1,4 +1,4 @@
-from django.db.models import Count, Prefetch, Q
+from django.db.models import BooleanField, Count, Exists, F, OuterRef, Prefetch, Q, Value
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -14,7 +14,7 @@ from accounts.models import StudentProfile, User
 from applications.models import Application
 from companies.models import Company
 from forum.models import Answer, Question
-from jobs.models import Job, Skill
+from jobs.models import Job, JobBookmark, Skill
 from . import serializers as data
 
 
@@ -45,10 +45,18 @@ def public_jobs():
     )
 
 
+def with_bookmark_state(queryset, user):
+    bookmarked = Value(False, output_field=BooleanField())
+    if user.is_authenticated and user.role == User.Role.STUDENT:
+        bookmarked = Exists(JobBookmark.objects.filter(student=user, job_id=OuterRef('pk')))
+    return queryset.annotate(bookmarked=bookmarked)
+
+
+@never_cache
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def job_list(request):
-    queryset = public_jobs()
+    queryset = with_bookmark_state(public_jobs(), request.user)
     params = request.query_params
     keyword = params.get('keyword', '').strip()
     if keyword:
@@ -67,18 +75,30 @@ def job_list(request):
             raise ValidationError({'skill': 'Enter a valid skill ID.'})
         queryset = queryset.filter(skills__id=int(raw_skill))
     sort = 'deadline' if params.get('sort') == 'deadline' else '-created_at'
-    return listing(request, queryset.order_by(sort, 'pk'), data.JobSerializer)
+    return listing(request, queryset.order_by(sort, 'pk'), data.PublicJobSerializer)
 
 
+@never_cache
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def job_detail(request, pk):
-    job = get_object_or_404(public_jobs(), pk=pk)
+    job = get_object_or_404(with_bookmark_state(public_jobs(), request.user), pk=pk)
     job.already_applied = (
         request.user.is_authenticated and request.user.role == User.Role.STUDENT
         and job.applications.filter(student__user=request.user).exists()
     )
     return Response(data.PublicJobDetailSerializer(job).data)
+
+
+@never_cache
+@api_view(['GET'])
+def saved_jobs(request):
+    require_role(request, User.Role.STUDENT)
+    queryset = jobs_with_details().filter(bookmarks__student=request.user).annotate(
+        available=Exists(public_jobs().filter(pk=OuterRef('pk'))),
+        saved_title=F('bookmarks__job_title'),
+    ).order_by('-bookmarks__created_at', 'pk')
+    return listing(request, queryset, data.SavedJobSerializer)
 
 
 @api_view(['GET'])

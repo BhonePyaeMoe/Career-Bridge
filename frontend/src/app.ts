@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { DatePipe, NgTemplateOutlet } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { Api, Choice, Listing, Options, Row, errorMessages, label } from './api';
@@ -10,6 +10,7 @@ export const pages = [
   ['forum/:id/answers/:answer/edit', 'edit-answer'], ['forum/:id', 'question'],
   ['login', 'login'], ['register', 'register'], ['dashboard', 'dashboard'],
   ['student/profile', 'student-profile'], ['student/applications', 'student-applications'],
+  ['student/saved-jobs', 'saved-jobs'],
   ['company/profile', 'company-profile'], ['company/jobs', 'company-jobs'],
   ['company/jobs/new', 'new-job'], ['company/jobs/:id/edit', 'edit-job'],
   ['company/jobs/:id/applicants', 'applicants'], ['company/applications/:id', 'review'],
@@ -26,7 +27,7 @@ export const pages = [
     </nav>
     <div class="account">@if (api.user(); as user) {
       <img class="account-avatar" width="38" height="38" [src]="api.avatarSrc()" [alt]="user.username + ' profile picture'" (error)="api.useDefaultAvatar()">
-      <button type="button" class="button small danger" [disabled]="busy()" (click)="signOut()">Sign out</button>
+      <button type="button" class="button small secondary" [disabled]="busy()" (click)="signOut()">Sign out</button>
     } @else { <a class="button small" routerLink="/register">Create account</a><a routerLink="/login">Sign in</a> }</div>
   </div></header>
   <main class="wrap main" id="main"><router-outlet /></main>
@@ -52,6 +53,7 @@ const f = (name: string, title: string, type = 'text', required = true, max?: nu
 const statuses: Record<string, string[]> = {applied: ['under_review','not_selected'], under_review: ['interview_approved','not_selected']};
 const headings: Record<string, string> = {
   jobs: 'Find jobs and internships', job: 'Job details', apply: 'Apply for this role', forum: 'Career Q&A',
+  'saved-jobs': 'Saved jobs',
   question: 'Career discussion', ask: 'Ask a question', 'edit-question': 'Edit your question', 'edit-answer': 'Edit your answer',
   login: 'Welcome back', register: 'Create your account', dashboard: 'Your dashboard',
   'student-profile': 'Student profile', 'student-applications': 'My applications', 'company-profile': 'Company profile',
@@ -59,7 +61,7 @@ const headings: Record<string, string> = {
   applicants: 'Job applicants', review: 'Review application',
 };
 
-@Component({selector: 'app-page', templateUrl: './page.html', imports: [RouterLink, DatePipe]})
+@Component({selector: 'app-page', templateUrl: './page.html', imports: [RouterLink, DatePipe, NgTemplateOutlet]})
 export class Page implements OnInit, OnDestroy {
   api = inject(Api);
   private route = inject(ActivatedRoute);
@@ -77,6 +79,7 @@ export class Page implements OnInit, OnDestroy {
   options = signal<Options | null>(null);
   loading = signal(false);
   busy = signal(false);
+  bookmarkBusy = signal(false);
   readErrors = signal<string[]>([]);
   formErrors = signal<string[]>([]);
   notice = signal('');
@@ -103,6 +106,7 @@ export class Page implements OnInit, OnDestroy {
     this.loading.set(true);
     const lists: Record<string, string> = {
       jobs: 'jobs/', forum: 'forum/questions/', 'student-applications': 'student/applications/',
+      'saved-jobs': 'student/saved-jobs/',
       'company-jobs': 'company/jobs/', applicants: `company/jobs/${this.id}/applicants/`,
     };
     const details: Record<string, string> = {
@@ -140,6 +144,41 @@ export class Page implements OnInit, OnDestroy {
   }
   reset(form: HTMLFormElement) { form.reset(); this.query = {}; this.page = 1; void this.load(); }
   changePage(change: number) { this.page += change; void this.load(); }
+
+  showBookmark() {
+    const user = this.api.user();
+    return !user || user.role === 'student';
+  }
+
+  async toggleBookmark(job: Row) {
+    if (this.bookmarkBusy()) return;
+    const user = this.api.user();
+    if (!user) { await this.router.navigateByUrl('/login'); return; }
+    if (user.role !== 'student') return;
+    const target = job['id'];
+    const save = !job['bookmarked'];
+    const seq = this.serial;
+    this.bookmarkBusy.set(true);
+    this.formErrors.set([]);
+    this.notice.set('');
+    try {
+      await this.api.post(`jobs/${target}/bookmark/${save ? 'save' : 'remove'}/`);
+      if (seq !== this.serial) return;
+      if (this.kind === 'saved-jobs' && !save) {
+        if (this.page > 1 && this.listing()?.results.length === 1) this.page--;
+        await this.load();
+      } else {
+        this.listing.update(list => list && {...list, results: list.results.map(row =>
+          row['id'] === target ? {...row, bookmarked: save} : row)});
+        this.record.update(row => row['id'] === target ? {...row, bookmarked: save} : row);
+      }
+      this.notice.set(save ? 'Job saved to your dashboard.' : 'Job removed from Saved jobs.');
+    } catch (error) {
+      if (seq === this.serial) this.formErrors.set(errorMessages(error));
+    } finally {
+      this.bookmarkBusy.set(false);
+    }
+  }
 
   fields(): Field[] {
     const opts = this.options();
