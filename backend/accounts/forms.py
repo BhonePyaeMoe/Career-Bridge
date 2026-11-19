@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from .models import StudentProfile, User
+from django.core.files.uploadedfile import UploadedFile
 
 
 THAI_UNIVERSITIES = [
@@ -89,7 +90,7 @@ class StudentProfileForm(forms.ModelForm):
 
     def clean_cv(self):
         cv = self.cleaned_data.get("cv")
-        if cv:
+        if isinstance(cv, UploadedFile):
             if getattr(cv, "content_type", "application/pdf") != "application/pdf":
                 raise forms.ValidationError("Only PDF files are allowed.")
             header = cv.read(5)

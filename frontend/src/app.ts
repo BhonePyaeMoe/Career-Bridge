@@ -18,13 +18,15 @@ export const pages = [
 @Component({selector: 'app-root', imports: [RouterOutlet, RouterLink, RouterLinkActive], template: `
   <a class="skip" href="#main">Skip to content</a>
   <header class="top"><div class="wrap navbar">
-    <a class="brand" routerLink="/" aria-label="CareerBridge home"><span class="mark" aria-hidden="true">CB</span> CareerBridge</a>
-    <nav aria-label="Main navigation"><a routerLink="/jobs" routerLinkActive="current">Find jobs</a><a routerLink="/forum" routerLinkActive="current">Career Q&amp;A</a>
+    <a class="brand" routerLink="/" aria-label="CareerBridge home">CareerBridge<svg class="brand-accent" width="12" height="9" viewBox="0 0 12 9" aria-hidden="true"><path d="m2 7 4-5 4 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <nav aria-label="Main navigation">
+      <a routerLink="/jobs" routerLinkActive="current">Find jobs</a>
+      <a routerLink="/forum" routerLinkActive="current">Career Q&amp;A</a>
       @if (api.user()) { <a routerLink="/dashboard" routerLinkActive="current">Dashboard</a> }
     </nav>
     <div class="account">@if (api.user(); as user) {
       <span class="handle">{{user.username}}</span><button type="button" class="button small secondary" [disabled]="busy()" (click)="signOut()">Sign out</button>
-    } @else { <a routerLink="/login">Sign in</a><a class="button small" routerLink="/register">Create account</a> }</div>
+    } @else { <a class="button small" routerLink="/register">Create account</a><a routerLink="/login">Sign in</a> }</div>
   </div></header>
   <main class="wrap main" id="main"><router-outlet /></main>
   @if (issue()) { <p class="wrap error" role="alert">{{issue()}}</p> }
