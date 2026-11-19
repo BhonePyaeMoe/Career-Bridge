@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
-import { DatePipe, NgTemplateOutlet } from '@angular/common';
+import { DatePipe, NgTemplateOutlet, UpperCasePipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { Api, Choice, Listing, Options, Row, errorMessages, label } from './api';
@@ -62,7 +62,7 @@ const headings: Record<string, string> = {
   applicants: 'Job applicants', review: 'Review application',
 };
 
-@Component({selector: 'app-page', templateUrl: './page.html', imports: [RouterLink, DatePipe, NgTemplateOutlet]})
+@Component({selector: 'app-page', templateUrl: './page.html', imports: [RouterLink, DatePipe, NgTemplateOutlet, UpperCasePipe]})
 export class Page implements OnInit, OnDestroy {
   api = inject(Api);
   private route = inject(ActivatedRoute);

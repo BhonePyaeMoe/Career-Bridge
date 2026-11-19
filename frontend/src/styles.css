@@ -148,11 +148,8 @@ label{display:grid;gap:.35rem;font-weight:690;font-size:.94rem;min-width:0}input
 .student-profile-sidebar dl div{display:flex;justify-content:space-between;gap:.5rem;border-top:1px solid var(--line);padding:.72rem 1rem}
 .student-profile-sidebar dd{min-width:0;margin:0;text-align:right;font-weight:650;color:var(--ink);overflow-wrap:anywhere}
 .student-profile-sidebar .button{display:flex;margin:1rem;font-size:.875rem;text-align:center}
-.form-card.student-profile-form{--profile-padding:clamp(1rem,3vw,2rem);margin:0;max-width:none;padding:0 var(--profile-padding) var(--profile-padding);grid-template-columns:repeat(2,minmax(0,1fr));column-gap:1.25rem;row-gap:1.1rem}
-.student-profile-nav,.student-profile-intro,.student-profile-form .student-profile-wide,.student-profile-form fieldset,.student-profile-form .actions{grid-column:1/-1}
-.student-profile-nav{display:flex;flex-wrap:wrap;gap:0 1.35rem;margin:0 calc(-1 * var(--profile-padding));padding-inline:var(--profile-padding);border-bottom:1px solid var(--line);background:#f8fcfc;border-radius:.9rem .9rem 0 0}
-.student-profile-nav a{display:inline-flex;align-items:center;min-height:3rem;padding:.6rem .1rem .45rem;border-bottom:3px solid transparent;text-decoration:none;color:var(--muted);font-size:.875rem}
-.student-profile-nav a:hover,.student-profile-nav a[aria-current="page"]{color:var(--teal-dark);border-bottom-color:var(--teal)}
+.form-card.student-profile-form{margin:0;max-width:none;padding:clamp(1rem,3vw,2rem);grid-template-columns:repeat(2,minmax(0,1fr));column-gap:1.25rem;row-gap:1.1rem}
+.student-profile-intro,.student-profile-form .student-profile-wide,.student-profile-form fieldset,.student-profile-form .actions{grid-column:1/-1}
 .student-profile-intro p{margin-top:.4rem;color:var(--muted)}
 .student-profile-form>label{align-content:start}
 .student-profile-form>label small{font-weight:400;line-height:1.45}
@@ -162,4 +159,35 @@ label{display:grid;gap:.35rem;font-weight:690;font-size:.94rem;min-width:0}input
 .student-profile-form .actions button{background:var(--teal-dark)}
 .student-profile-form .actions button:hover{background:#064d55}
 @media(max-width:780px){.profile-layout{grid-template-columns:minmax(0,1fr)}.student-profile-sidebar{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center}.student-profile-identity{grid-row:span 2}.student-profile-sidebar dl div:first-child{border-top:0}}
-@media(max-width:560px){.form-card.student-profile-form{grid-template-columns:minmax(0,1fr)}.student-profile-sidebar{display:block}.student-profile-sidebar dl div:first-child{border-top:1px solid var(--line)}.student-profile-nav{gap:0 .85rem}}
+@media(max-width:560px){.form-card.student-profile-form{grid-template-columns:minmax(0,1fr)}.student-profile-sidebar{display:block}.student-profile-sidebar dl div:first-child{border-top:1px solid var(--line)}}
+
+/* Find jobs: a full-width search strip followed by the results. */
+.main:has(.job-search){padding-top:0}
+.job-search.card{grid-template-columns:repeat(4,minmax(0,1fr)) minmax(7rem,1.05fr);align-items:end;gap:.8rem;margin:0;border:0;border-radius:0;padding:1.4rem 0;background:var(--aqua-strong);box-shadow:0 0 0 100vmax var(--aqua-strong);clip-path:inset(0 -100vmax);overflow:visible}
+.job-search .search-keyword{grid-column:span 2}
+.job-search label:nth-of-type(6){grid-column:span 2}
+.job-search label{font-size:.875rem}
+.job-search input,.job-search select{border-color:#9ab9c1;border-radius:.38rem;font-weight:600}
+.job-search .actions{grid-area:1/5/3/6;display:grid;align-self:stretch;align-content:center;gap:.6rem}
+.job-search .button{border-radius:.38rem}
+.job-results-head{margin-block:clamp(2.25rem,5vw,4rem) 1.35rem}
+.job-results-head h1{max-width:24ch;font-size:clamp(2rem,4vw,3.2rem)}
+.job-results-toolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem 1rem;margin-block:0 .85rem}
+.job-results-toolbar .result-count,.job-results-toolbar .pagination{margin:0}
+.job-results-toolbar .pagination{gap:.6rem;font-size:.875rem}
+.job-tile{--tile-pad:1rem;padding:var(--tile-pad);border-radius:.65rem}
+.job-tile-cover{position:relative;isolation:isolate;display:flex;align-items:start;min-height:6.75rem;overflow:hidden;margin:calc(-1 * var(--tile-pad)) calc(-1 * var(--tile-pad)) .9rem;padding:var(--tile-pad);border-radius:.6rem .6rem 0 0;background:linear-gradient(125deg,#dceff1 15%,#e9e7ff 100%)}
+.job-tile-cover .pill{background:#fff;font-size:.8rem}
+.job-tile-monogram{position:absolute;inset:auto 1.15rem -.65rem auto;color:#3935a7;opacity:.28;font-size:clamp(3rem,6vw,5rem);line-height:1;font-weight:800;letter-spacing:-.055em}
+.job-tile .job-bookmark{z-index:2;background:#fff;border-color:var(--line);height:40px;width:40px}
+.job-tile .job-bookmark:hover,.job-tile .job-bookmark.is-saved{background:#eeedff}
+.job-tile.job-bookmark-card h2{padding-inline-end:0}
+@media(max-width:850px){
+  .job-search.card{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .job-search .search-keyword,.job-search label:nth-of-type(6){grid-column:auto}
+  .job-search .actions{grid-area:auto;grid-column:1/-1;display:flex}
+}
+@media(max-width:590px){
+  .job-search.card{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .job-search .search-keyword,.job-search label:nth-of-type(6){grid-column:1/-1}
+}

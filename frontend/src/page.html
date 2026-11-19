@@ -66,10 +66,11 @@
     </section>
   </div>
 } @else {
-  <header class="page-head"><p class="eyebrow">{{kind.startsWith('company') || kind === 'review' || kind === 'applicants' ? 'COMPANY WORKSPACE' : 'CAREERBRIDGE'}}</p><h1>{{heading}}</h1>
-    @if (kind === 'jobs') { <p>Explore approved opportunities and narrow your search to what suits you.</p> }
+  @if (kind !== 'jobs') {
+    <header class="page-head"><p class="eyebrow">{{kind.startsWith('company') || kind === 'review' || kind === 'applicants' ? 'COMPANY WORKSPACE' : 'CAREERBRIDGE'}}</p><h1>{{heading}}</h1>
     @if (kind === 'forum') { <p>Ask questions, share advice and learn from other members.</p> }
-  </header>
+    </header>
+  }
 
   @if (readErrors().length) { <div class="card" role="alert">@for (error of readErrors(); track $index) {<p class="error">{{error}}</p>}
     <div class="actions"><button class="button secondary" type="button" (click)="load()">Try again</button>@if (!api.user()) {<a routerLink="/login">Sign in</a>}</div></div> }
@@ -91,8 +92,8 @@
   @if (kind === 'saved-jobs') {<a class="back" routerLink="/jobs">Find jobs</a>}
 
   @if (kind === 'jobs' || kind === 'forum') {
-    <form class="card filters" #filters (submit)="filter($event)">
-      <label>Search<input name="keyword" [value]="query['keyword'] || ''" [placeholder]="kind === 'jobs' ? 'Title, company or skill' : 'Search questions'"></label>
+    <form class="card filters" [class.job-search]="kind === 'jobs'" [attr.aria-label]="kind === 'jobs' ? 'Search jobs' : 'Search forum'" #filters (submit)="filter($event)">
+      <label class="search-keyword">Search<input name="keyword" [value]="query['keyword'] || ''" [placeholder]="kind === 'jobs' ? 'Title, company or skill' : 'Search questions'"></label>
       @if (kind === 'jobs') {
         <label>Job type<select name="job_type"><option value="">All types</option>@for (c of options()?.job_types ?? []; track c.value) {<option [value]="c.value" [selected]="query['job_type'] === c.value">{{c.label}}</option>}</select></label>
         <label>Work mode<select name="work_mode"><option value="">All work modes</option>@for (c of options()?.work_modes ?? []; track c.value) {<option [value]="c.value" [selected]="query['work_mode'] === c.value">{{c.label}}</option>}</select></label>
@@ -103,23 +104,46 @@
       <div class="actions"><button class="button">Search</button><button class="button secondary" type="button" (click)="reset(filters)">Clear</button></div>
     </form>
   }
+  @if (kind === 'jobs') {
+    <header class="page-head job-results-head">
+      <p class="eyebrow">CAREERBRIDGE JOB BOARD</p>
+      <h1>{{heading}}</h1>
+      <p>Explore approved opportunities and narrow your search by role, location, or skill.</p>
+    </header>
+  }
   @if (kind === 'forum' && api.user()) {<div class="section-bar"><a class="button" routerLink="/forum/ask">Ask a question</a></div>}
   @if (kind === 'company-jobs') {<div class="section-bar"><a class="button" routerLink="/company/jobs/new">Create a listing</a></div>}
   @if (kind === 'applicants') {<a class="back" routerLink="/company/jobs">My job listings</a>}
 
   @if (loading()) {<p class="muted" role="status">Loading…</p>} @else if (!readErrors().length) {
     @if (listing(); as list) {
-      <p class="muted result-count" aria-live="polite">{{list.count}} {{list.count === 1 ? 'result' : 'results'}}</p>
+      <div [class.job-results-toolbar]="kind === 'jobs'">
+        <p class="muted result-count" aria-live="polite">{{list.count}} {{list.count === 1 ? 'result' : 'results'}}</p>
+        @if (kind === 'jobs' && (list.previous || list.next)) {
+          <nav class="pagination" aria-label="Job results pages">
+            <button class="button secondary small" type="button" [disabled]="!list.previous" (click)="changePage(-1)">Previous</button>
+            <span>Page {{page}}</span>
+            <button class="button secondary small" type="button" [disabled]="!list.next" (click)="changePage(1)">Next</button>
+          </nav>
+        }
+      </div>
       @if (!list.results.length) {<div class="card empty"><h2>{{kind === 'saved-jobs' ? 'No saved jobs yet' : 'No results yet'}}</h2><p>{{kind === 'saved-jobs' ? 'Bookmark opportunities from Find jobs to see them here.' : kind === 'jobs' || kind === 'forum' ? 'Try changing your search or clearing the filters.' : 'Records will appear here once they are available.'}}</p></div>}
       <div [class.grid]="kind === 'jobs' || kind === 'saved-jobs'" [class.stack]="kind !== 'jobs' && kind !== 'saved-jobs'">
         @for (row of list.results; track row['id']) {
-          <article class="card item" [class.job-bookmark-card]="(kind === 'jobs' || kind === 'saved-jobs') && showBookmark()">
+          <article class="card item" [class.job-tile]="kind === 'jobs'" [class.job-bookmark-card]="(kind === 'jobs' || kind === 'saved-jobs') && showBookmark()">
             @if (kind === 'jobs' || kind === 'saved-jobs') {
+              @if (kind === 'jobs') {
+                <div class="job-tile-cover">
+                  <span class="pill">{{label(row['job_type'])}}</span>
+                  <span class="job-tile-monogram" aria-hidden="true">{{row['company_name']?.slice(0, 2) | uppercase}}</span>
+                </div>
+              }
               <ng-container *ngTemplateOutlet="bookmark; context: {$implicit: row}"></ng-container>
               @if (row['available'] === false) {
                 <span class="pill">Unavailable</span><h2>{{row['title']}}</h2><p class="muted">This listing is no longer available.</p>
               } @else {
-                <span class="pill">{{label(row['job_type'])}}</span><h2><a [routerLink]="['/jobs',row['id']]">{{row['title']}}</a></h2><p>{{row['company_name']}}</p>
+                @if (kind === 'saved-jobs') {<span class="pill">{{label(row['job_type'])}}</span>}
+                <h2><a [routerLink]="['/jobs',row['id']]">{{row['title']}}</a></h2><p>{{row['company_name']}}</p>
                 <p class="muted">{{label(row['work_mode'])}} @if (row['location']) { · {{row['location']}} }</p>
                 <div class="tags">@for (skill of row['skills']; track skill.id) {<span>{{skill.name}}</span>}</div>
                 <p class="meta">Apply by {{row['deadline'] | date:'mediumDate':'UTC'}}</p>
@@ -148,7 +172,7 @@
           </article>
         }
       </div>
-      @if (list.previous || list.next) {
+      @if (kind !== 'jobs' && (list.previous || list.next)) {
         <nav class="pagination" aria-label="Pagination"><button class="button secondary" [disabled]="!list.previous" (click)="changePage(-1)">Previous</button><span>Page {{page}}</span><button class="button secondary" [disabled]="!list.next" (click)="changePage(1)">Next</button></nav>
       }
     }
@@ -218,11 +242,6 @@
         }
       <form class="card form-card" [class.student-profile-form]="kind === 'student-profile'" autocomplete="on" (submit)="submit($event)">
         @if (kind === 'student-profile') {
-          <nav class="student-profile-nav" aria-label="Student workspace">
-            <a routerLink="/student/profile" aria-current="page">Profile settings</a>
-            <a routerLink="/student/applications">My applications</a>
-            <a routerLink="/student/saved-jobs">Saved jobs</a>
-          </nav>
           <div class="student-profile-intro">
             <h2>Profile details</h2>
             <p>Update your personal details, education, and application documents.</p>
