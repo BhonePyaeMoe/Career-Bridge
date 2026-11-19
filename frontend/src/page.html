@@ -1,10 +1,57 @@
 @if (kind === 'home') {
-  <section class="hero"><div class="hero-copy"><p class="eyebrow">EARLY CAREERS</p><h1>Find your first<br>opportunity.</h1><p>Explore approved internships and entry-level jobs, track your applications, and ask the questions that help you take the next step.</p><div class="actions"><a class="button" routerLink="/jobs">Explore jobs</a><a class="button hero-outline" routerLink="/forum">Visit Career Q&amp;A</a></div></div><div class="hero-art" aria-hidden="true"><span>CB</span></div></section>
-  <section class="home-links" aria-label="Explore CareerBridge">
-    <a class="card" routerLink="/jobs"><span class="eyebrow">01 / EXPLORE</span><h2>Jobs and internships</h2><p>Filter by role, location, work mode or skill.</p></a>
-    <a class="card" [routerLink]="api.user() ? '/dashboard' : '/register'"><span class="eyebrow">02 / CONNECT</span><h2>Your career dashboard</h2><p>Set up a profile or manage your company’s listings.</p></a>
-    <a class="card" routerLink="/forum"><span class="eyebrow">03 / ASK</span><h2>Career Q&amp;A</h2><p>Share experience and get answers to career questions.</p></a>
-  </section>
+  <div class="home-page">
+    <section class="landing-hero" aria-labelledby="landing-title">
+      <div class="wrap landing-hero-inner">
+        <div class="landing-copy">
+          <p class="landing-kicker"><span aria-hidden="true"></span> INTERNSHIPS &amp; ENTRY-LEVEL JOBS</p>
+          <h1 id="landing-title">Find your first <em>opportunity.</em></h1>
+          <p class="landing-intro">Find roles that fit your skills, track your applications in one place, and get advice from the CareerBridge community.</p>
+          <div class="actions landing-actions">
+            <a class="button landing-primary" routerLink="/jobs">Explore jobs</a>
+            <a class="button landing-outline" routerLink="/forum">Career Q&amp;A</a>
+          </div>
+        </div>
+        <figure class="landing-photo">
+          <img src="/assets/career-signpost.png" width="850" height="567" fetchpriority="high" alt="Three wooden signs marked Career pointing in different directions against a blue sky">
+        </figure>
+      </div>
+      <div class="wrap landing-trust">
+        <span>Admin-approved listings</span><span>Application tracking</span><span>Community Q&amp;A</span>
+      </div>
+    </section>
+    <section class="landing-explore" aria-labelledby="explore-title">
+      <div class="wrap">
+        <div class="landing-section-heading">
+          <div><p class="eyebrow">EXPLORE CAREERBRIDGE</p><h2 id="explore-title">What would you like to do?</h2></div>
+          <p>Browse openings, manage your applications, or get advice before your next interview.</p>
+        </div>
+        <div class="landing-paths">
+          <a class="landing-path" routerLink="/jobs">
+            <svg class="landing-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M3 12h18m-11 0v2h4v-2"/></svg>
+            <h3>Jobs and internships</h3><p>Find opportunities by role, location, work mode or skill.</p><span>Browse openings</span>
+          </a>
+          <a class="landing-path" [routerLink]="api.user() ? '/dashboard' : '/register'">
+            <svg class="landing-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><circle cx="12" cy="10" r="2"/><path d="M8 17a4 4 0 0 1 8 0"/></svg>
+            <h3>Your dashboard</h3><p>Set up a student profile or manage your company’s job listings.</p><span>{{api.user() ? 'Open dashboard' : 'Create an account'}}</span>
+          </a>
+          <a class="landing-path" routerLink="/forum">
+            <svg class="landing-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H4l2.3-3.3A7.5 7.5 0 1 1 20 11.5ZM9 11.5h.1m3.4 0h.1m3.4 0h.1"/></svg>
+            <h3>Career Q&amp;A</h3><p>Ask a question about applications, interviews or getting started.</p><span>Read discussions</span>
+          </a>
+        </div>
+      </div>
+    </section>
+    <section class="landing-banner" aria-label="For employers">
+      <div class="wrap landing-banner-inner">
+        <div><p class="eyebrow">FOR EMPLOYERS</p><h2>Hiring for an early-career role?</h2><p>Post an opening and manage applications from your company dashboard.</p></div>
+        @if (api.user(); as user) {
+          @if (user.role === 'company') {<a class="button" routerLink="/company/jobs">Manage job listings</a>}
+        } @else {
+          <a class="button" routerLink="/register">Create an employer account</a>
+        }
+      </div>
+    </section>
+  </div>
 } @else {
   <header class="page-head"><p class="eyebrow">{{kind.startsWith('company') || kind === 'review' || kind === 'applicants' ? 'COMPANY WORKSPACE' : 'CAREERBRIDGE'}}</p><h1>{{heading}}</h1>
     @if (kind === 'jobs') { <p>Explore approved opportunities and narrow your search to what suits you.</p> }
