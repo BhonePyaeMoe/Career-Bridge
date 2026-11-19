@@ -32,6 +32,8 @@ ANGULAR_ROOT = BASE_DIR / "angular_dist"
 WHITENOISE_ROOT = ANGULAR_ROOT
 MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")
 ROOT_URLCONF = "config.railway_urls"
+# The Railway URLconf serves Angular at / and does not include core:home.
+LOGOUT_REDIRECT_URL = "/"
 
 # Railway terminates HTTPS at its public edge.
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
