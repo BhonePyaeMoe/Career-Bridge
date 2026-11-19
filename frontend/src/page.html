@@ -1,0 +1,149 @@
+@if (kind === 'home') {
+  <section class="hero"><div class="hero-copy"><p class="eyebrow">EARLY CAREERS</p><h1>Find your first<br>opportunity.</h1><p>Explore approved internships and entry-level jobs, track your applications, and ask the questions that help you take the next step.</p><div class="actions"><a class="button" routerLink="/jobs">Explore jobs</a><a class="button hero-outline" routerLink="/forum">Visit Career Q&amp;A</a></div></div><div class="hero-art" aria-hidden="true"><span>CB</span></div></section>
+  <section class="home-links" aria-label="Explore CareerBridge">
+    <a class="card" routerLink="/jobs"><span class="eyebrow">01 / EXPLORE</span><h2>Jobs and internships</h2><p>Filter by role, location, work mode or skill.</p></a>
+    <a class="card" [routerLink]="api.user() ? '/dashboard' : '/register'"><span class="eyebrow">02 / CONNECT</span><h2>Your career dashboard</h2><p>Set up a profile or manage your company’s listings.</p></a>
+    <a class="card" routerLink="/forum"><span class="eyebrow">03 / ASK</span><h2>Career Q&amp;A</h2><p>Share experience and get answers to career questions.</p></a>
+  </section>
+} @else {
+  <header class="page-head"><p class="eyebrow">{{kind.startsWith('company') || kind === 'review' || kind === 'applicants' ? 'COMPANY WORKSPACE' : 'CAREERBRIDGE'}}</p><h1>{{heading}}</h1>
+    @if (kind === 'jobs') { <p>Explore approved opportunities and narrow your search to what suits you.</p> }
+    @if (kind === 'forum') { <p>Ask questions, share advice and learn from other members.</p> }
+  </header>
+
+  @if (readErrors().length) { <div class="card" role="alert">@for (error of readErrors(); track $index) {<p class="error">{{error}}</p>}
+    <div class="actions"><button class="button secondary" type="button" (click)="load()">Try again</button>@if (!api.user()) {<a routerLink="/login">Sign in</a>}</div></div> }
+  @if (notice()) { <p class="notice" role="status">{{notice()}}</p> }
+  @if (formErrors().length) { <div class="error" role="alert"><ul>@for (error of formErrors(); track $index) {<li>{{error}}</li>}</ul></div> }
+
+  @if (kind === 'jobs' || kind === 'forum') {
+    <form class="card filters" #filters (submit)="filter($event)">
+      <label>Search<input name="keyword" [value]="query['keyword'] || ''" [placeholder]="kind === 'jobs' ? 'Title, company or skill' : 'Search questions'"></label>
+      @if (kind === 'jobs') {
+        <label>Job type<select name="job_type"><option value="">All types</option>@for (c of options()?.job_types ?? []; track c.value) {<option [value]="c.value" [selected]="query['job_type'] === c.value">{{c.label}}</option>}</select></label>
+        <label>Work mode<select name="work_mode"><option value="">All work modes</option>@for (c of options()?.work_modes ?? []; track c.value) {<option [value]="c.value" [selected]="query['work_mode'] === c.value">{{c.label}}</option>}</select></label>
+        <label>Location<input name="location" [value]="query['location'] || ''" placeholder="e.g. Bangkok"></label>
+        <label>Skill<select name="skill"><option value="">All skills</option>@for (skill of options()?.skills ?? []; track skill.id) {<option [value]="skill.id" [selected]="query['skill'] === '' + skill.id">{{skill.name}}</option>}</select></label>
+        <label>Sort by<select name="sort"><option value="">Newest first</option><option value="deadline" [selected]="query['sort'] === 'deadline'">Deadline</option></select></label>
+      }
+      <div class="actions"><button class="button">Search</button><button class="button secondary" type="button" (click)="reset(filters)">Clear</button></div>
+    </form>
+  }
+  @if (kind === 'forum' && api.user()) {<div class="section-bar"><a class="button" routerLink="/forum/ask">Ask a question</a></div>}
+  @if (kind === 'company-jobs') {<div class="section-bar"><a class="button" routerLink="/company/jobs/new">Create a listing</a></div>}
+  @if (kind === 'applicants') {<a class="back" routerLink="/company/jobs">My job listings</a>}
+
+  @if (loading()) {<p class="muted" role="status">Loading…</p>} @else if (!readErrors().length) {
+    @if (listing(); as list) {
+      <p class="muted result-count" aria-live="polite">{{list.count}} {{list.count === 1 ? 'result' : 'results'}}</p>
+      @if (!list.results.length) {<div class="card empty"><h2>No results yet</h2><p>{{kind === 'jobs' || kind === 'forum' ? 'Try changing your search or clearing the filters.' : 'Records will appear here once they are available.'}}</p></div>}
+      <div [class.grid]="kind === 'jobs'" [class.stack]="kind !== 'jobs'">
+        @for (row of list.results; track row['id']) {
+          <article class="card item">
+            @switch (kind) {
+              @case ('jobs') {
+                <span class="pill">{{label(row['job_type'])}}</span><h2><a [routerLink]="['/jobs',row['id']]">{{row['title']}}</a></h2><p>{{row['company_name']}}</p>
+                <p class="muted">{{label(row['work_mode'])}} @if (row['location']) { · {{row['location']}} }</p>
+                <div class="tags">@for (skill of row['skills']; track skill.id) {<span>{{skill.name}}</span>}</div>
+                <p class="meta">Apply by {{row['deadline'] | date:'mediumDate':'UTC'}}</p>
+              }
+              @case ('forum') {
+                <h2><a [routerLink]="['/forum',row['id']]">{{row['title']}}</a></h2><p class="excerpt">{{row['body']}}</p>
+                <p class="meta">{{row['author']}} · {{row['created_at'] | date:'mediumDate'}} · {{row['answer_count']}} replies</p>
+              }
+              @case ('student-applications') {
+                <span class="pill">{{label(row['status'])}}</span><h2>{{row['job_title']}}</h2><p>{{row['company_name']}} · Applied {{row['applied_at'] | date:'mediumDate'}}</p>
+                @if (row['company_message']) {<p class="prose"><strong>Company message:</strong> {{row['company_message']}}</p>}
+                @if (row['interview_datetime']) {<p><strong>Interview:</strong> {{row['interview_datetime'] | date:'medium':'+0700'}} ICT · {{row['interview_location']}}</p>}
+              }
+              @case ('company-jobs') {
+                <span class="pill">{{label(row['approval_status'])}}</span><h2>{{row['title']}}</h2><p>{{label(row['job_type'])}} · Apply by {{row['deadline'] | date:'mediumDate':'UTC'}}</p>
+                <div class="actions"><a class="button secondary" [routerLink]="['/company/jobs',row['id'],'applicants']">View applicants</a><a [routerLink]="['/company/jobs',row['id'],'edit']">Edit listing</a>
+                  @if (row['approval_status'] !== 'closed') { <button class="button secondary" type="button" [disabled]="busy()" (click)="submit($event,'close',row['id'])">Close listing</button> }</div>
+              }
+              @case ('applicants') {
+                <span class="pill">{{label(row['status'])}}</span><h2>{{row['full_name']}}</h2><p>{{row['degree']}} · {{row['university']}}</p>
+                <div class="actions"><a class="button secondary" [routerLink]="['/company/applications',row['id']]">Review application</a>@if (row['cv_url']) {<a [href]="row['cv_url']">Download CV</a>}</div>
+              }
+            }
+          </article>
+        }
+      </div>
+      @if (list.previous || list.next) {
+        <nav class="pagination" aria-label="Pagination"><button class="button secondary" [disabled]="!list.previous" (click)="changePage(-1)">Previous</button><span>Page {{page}}</span><button class="button secondary" [disabled]="!list.next" (click)="changePage(1)">Next</button></nav>
+      }
+    }
+
+    @if (kind === 'dashboard') {
+      @if (api.user(); as user) {
+        <section class="card welcome"><span class="pill">{{label(user.role)}} account</span><h2>Welcome, {{user.username}}</h2><p>Choose what you’d like to do next.</p></section>
+        <div class="home-links">
+          @if (user.role === 'student') {
+            <a class="card" routerLink="/student/profile"><h2>My profile</h2><p>Update education, skills and your CV.</p></a>
+            <a class="card" routerLink="/student/applications"><h2>My applications</h2><p>Track statuses and interview details.</p></a>
+            <a class="card" routerLink="/jobs"><h2>Find jobs</h2><p>Browse approved opportunities.</p></a>
+          } @else if (user.role === 'company') {
+            <a class="card" routerLink="/company/profile"><h2>Company profile</h2><p>Update company information and check approval.</p></a>
+            <a class="card" routerLink="/company/jobs"><h2>My listings</h2><p>Manage listings and review applications.</p></a>
+          } @else { <a class="card" href="/admin/"><h2>Django Admin</h2><p>Approve listings and moderate content.</p></a> }
+          <a class="card" routerLink="/forum"><h2>Career Q&amp;A</h2><p>Join career conversations.</p></a>
+        </div>
+      } @else { <div class="card"><p>Sign in to see your dashboard.</p><a class="button" routerLink="/login">Sign in</a></div> }
+    }
+
+    @if (kind === 'job') {
+      <a class="back" routerLink="/jobs">All jobs</a>
+      <article class="card detail"><span class="pill">{{label(record()['job_type'])}}</span><h2>{{record()['title']}}</h2><p>{{record()['company_name']}} · {{label(record()['work_mode'])}} @if (record()['location']) { · {{record()['location']}} }</p>
+        <p class="meta">Application deadline: {{record()['deadline'] | date:'mediumDate':'UTC'}}</p>
+        <h3>Description</h3><p class="prose">{{record()['description']}}</p><h3>Requirements</h3><p class="prose">{{record()['requirements']}}</p>
+        <div class="tags">@for(skill of record()['skills']; track skill.id) {<span>{{skill.name}}</span>}</div>
+        <div class="actions">@if (record()['already_applied']) {<a class="button secondary" routerLink="/student/applications">View my application</a>}
+          @else if (api.user()?.role === 'student') {<a class="button" [routerLink]="['/jobs',id,'apply']">Apply now</a>}
+          @else if (!api.user()) {<a class="button" routerLink="/login">Sign in to apply</a>}</div>
+      </article>
+    }
+
+    @if (kind === 'question') {
+      <a class="back" routerLink="/forum">All questions</a>
+      <article class="card detail"><h2>{{record()['title']}}</h2><p class="meta">{{record()['author']}} · {{record()['created_at'] | date:'mediumDate'}}</p><p class="prose">{{record()['body']}}</p>
+        @if (api.user()?.username === record()['author']) {<a [routerLink]="['/forum',id,'edit']">Edit question</a>}
+      </article>
+      <h2 class="section-bar">{{record()['answer_count']}} replies</h2>
+      <div class="stack">@for (reply of record()['answers']; track reply['id']) {
+        <article class="card item"><div class="actions"><strong>{{reply['author']}}</strong>@if (reply['is_accepted']) {<span class="pill success">Accepted answer</span>}</div><p class="prose">{{reply['body']}}</p>
+          <div class="actions">@if (reply['author'] === api.user()?.username) {<a [routerLink]="['/forum',id,'answers',reply['id'],'edit']">Edit answer</a>}
+            @if (!reply['is_accepted'] && api.user()?.username === record()['author']) {<button class="button secondary" type="button" [disabled]="busy()" (click)="submit($event,'accept',reply['id'])">Accept answer</button>}</div></article>
+      }</div>
+      @if (api.user()) {<form class="card form-card" (submit)="submit($event,'answer')"><label>Your answer<textarea name="body" required rows="5"></textarea></label><button class="button" [disabled]="busy()">Post answer</button></form>}
+      @else {<p><a routerLink="/login">Sign in</a> to answer this question.</p>}
+    }
+
+    @if (fields().length) {
+      <form class="card form-card" autocomplete="on" (submit)="submit($event)">
+        @if (kind === 'apply') {<h2>{{record()['title']}}</h2><p>{{record()['company_name']}}</p>}
+        @if (kind === 'review') {<h2>{{record()['full_name']}}</h2><p>{{record()['job_title']}} · {{record()['degree']}} · {{record()['university']}}</p>@if (record()['cover_message']) {<p class="prose">{{record()['cover_message']}}</p>}@if (record()['cv_url']) {<p><a [href]="record()['cv_url']">Download CV</a></p>}}
+        @if (kind === 'company-profile' && record()['approval_status']) {<p>Approval status: <span class="pill">{{label(record()['approval_status'])}}</span></p>}
+        @if (kind === 'student-profile' && record()['has_cv']) {<p class="muted">CV on file. Leave the upload field blank to keep it.</p>}
+        @if (kind === 'new-job' || kind === 'edit-job') {<p class="muted">An administrator reviews new and edited listings before they appear publicly.</p>}
+        @for (field of fields(); track field.name) {
+          <label>{{field.title}}
+            @switch (field.type) {
+              @case ('select') { <select [name]="field.name" [required]="!!field.required" (change)="field.name === 'university' && otherUniversity.set($any($event.target).value === '__other__')">
+                <option value="">Choose an option</option>@for (option of field.choices ?? []; track option.value) {<option [value]="option.value" [selected]="fieldValue(field.name) === option.value">{{option.label}}</option>}</select> }
+              @case ('textarea') {<textarea [name]="field.name" [required]="!!field.required" [value]="fieldValue(field.name)" rows="5"></textarea>}
+              @case ('file') {<input type="file" [name]="field.name" accept="application/pdf,.pdf">}
+              @default {<input [type]="field.type || 'text'" [name]="field.name" [required]="!!field.required" [value]="fieldValue(field.name)" [attr.maxlength]="field.max ?? null" [attr.autocomplete]="field.name === 'username' ? 'username' : field.name === 'password' ? 'current-password' : field.name.startsWith('password') ? 'new-password' : null">}
+            }
+          </label>
+        }
+        @if (kind === 'student-profile' || kind === 'new-job' || kind === 'edit-job') {
+          <fieldset><legend>{{kind === 'student-profile' ? 'Your skills' : 'Skills required'}}</legend><div class="checks">@for (skill of options()?.skills ?? []; track skill.id) {<label><input type="checkbox" name="skills" [value]="skill.id" [checked]="hasSkill(skill.id)"> {{skill.name}}</label>} @empty {<p class="muted">No skills configured yet.</p>}</div></fieldset>
+        }
+        <div class="actions"><button class="button" [disabled]="busy()">{{busy() ? 'Saving…' : kind === 'login' ? 'Sign in' : kind === 'register' ? 'Create account' : kind === 'apply' ? 'Submit application' : kind === 'ask' ? 'Post question' : 'Save changes'}}</button>
+          @if (kind === 'login') {<a routerLink="/register">Create account</a>}
+          @if (kind === 'register') {<a routerLink="/login">Already have an account?</a>}
+        </div>
+      </form>
+    }
+  }
+}
