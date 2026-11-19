@@ -23,6 +23,7 @@ Try `/api/jobs/`, `/api/options/`, and `/api/forum/questions/` in the browser. T
 | Public | `/api/forum/questions/{id}/` | Visible question and its visible answers |
 | Student | `/api/student/profile/` | Own profile (including any saved photo URL) in `profile`, or `null` if no profile exists |
 | Student | `/api/student/applications/` | Own applications, statuses and interview information |
+| Student | `/api/student/applications/<application_id>/job/` | Read-only details for the signed-in student's own application, even after the listing closes or expires |
 | Company | `/api/company/profile/` | Own profile (including any saved logo URL) in `profile`, or `null` if no profile exists |
 | Student or company | `/api/profile/picture/` | Signed-in account's own photo or logo; never returns another account's image |
 | Company | `/api/company/jobs/` and `/api/company/jobs/{id}/` | Own job listings and job edit-form data |

@@ -156,6 +156,10 @@
               }
               @case ('student-applications') {
                 <span class="pill application-status" [attr.data-status]="row['status']">{{label(row['status'])}}</span><h2>{{row['job_title']}}</h2><p>{{row['company_name']}} · Applied {{row['applied_at'] | date:'mediumDate'}}</p>
+                <div class="actions">
+                  <a class="button secondary small" [routerLink]="['/student/applications',row['id'],'job']">View job details</a>
+                  @if (row['listing_status'] && row['listing_status'] !== 'open') {<span class="pill">Listing {{label(row['listing_status']).toLowerCase()}}</span>}
+                </div>
                 @if (row['company_message']) {<p class="prose"><strong>Company message:</strong> {{row['company_message']}}</p>}
                 @if (row['interview_datetime']) {<p><strong>Interview:</strong> {{row['interview_datetime'] | date:'medium':'+0700'}} ICT · {{row['interview_location']}}</p>}
               }
@@ -193,6 +197,21 @@
           <a class="card" routerLink="/forum"><h2>Career Q&amp;A</h2><p>Join career conversations.</p></a>
         </div>
       } @else { <div class="card"><p>Sign in to see your dashboard.</p><a class="button" routerLink="/login">Sign in</a></div> }
+    }
+
+    @if (kind === 'applied-job') {
+      <a class="back" routerLink="/student/applications">Back to my applications</a>
+      <article class="card detail">
+        <span class="pill">Listing {{label(record()['listing_status']).toLowerCase()}}</span>
+        <h2>{{record()['title']}}</h2><p>{{record()['company_name']}}</p>
+        @if (record()['details_available']) {
+          <p class="muted">{{label(record()['job_type'])}} · {{label(record()['work_mode'])}} @if (record()['location']) { · {{record()['location']}} }</p>
+          <p class="meta">Application deadline: {{record()['deadline'] | date:'mediumDate':'UTC'}}</p>
+          <h3>Description</h3><p class="prose">{{record()['description']}}</p>
+          <h3>Requirements</h3><p class="prose">{{record()['requirements']}}</p>
+          <div class="tags">@for(skill of record()['skills']; track skill.id) {<span>{{skill.name}}</span>}</div>
+        } @else { <p class="muted">The full listing is currently unavailable. Your application is still on record.</p> }
+      </article>
     }
 
     @if (kind === 'job') {

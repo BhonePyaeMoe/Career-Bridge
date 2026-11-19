@@ -83,6 +83,41 @@ class ReadApiTests(TestCase):
         self.assertTrue(self.read('job-detail', self.job.pk).json()['already_applied'])
         self.assertFalse(self.read('job-detail', self.other_job.pk).json()['already_applied'])
 
+    def test_applicant_can_view_closed_job_without_reopening_it(self):
+        Job.objects.filter(pk=self.job.pk).update(
+            approval_status=Job.ApprovalStatus.CLOSED, description='Build the frontend.',
+        )
+        self.client.force_login(self.student)
+        application = self.read('student-applications').json()['results'][0]
+        self.assertEqual(application['status'], 'applied')
+        self.assertEqual(application['listing_status'], 'closed')
+        self.assertEqual(self.read('job-detail', self.job.pk).status_code, 404)
+        self.assertNotIn(self.job.pk, [row['id'] for row in self.read('job-list').json()['results']])
+        response = self.read('student-application-job', self.application.pk)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['description'], 'Build the frontend.')
+        self.assertTrue(response.json()['details_available'])
+        self.assertEqual(response.json()['listing_status'], 'closed')
+        self.assertIn('no-store', response['Cache-Control'])
+        self.assertEqual(self.client.post(reverse('api:student-application-job', args=[self.application.pk])).status_code, 405)
+
+    def test_application_job_details_are_private_to_the_applicant(self):
+        self.assertEqual(self.read('student-application-job', self.application.pk).status_code, 403)
+        self.client.force_login(self.other)
+        self.assertEqual(self.read('student-application-job', self.application.pk).status_code, 404)
+        self.client.force_login(self.company.user)
+        self.assertEqual(self.read('student-application-job', self.application.pk).status_code, 403)
+
+    def test_application_job_hides_unavailable_listing_description(self):
+        Job.objects.filter(pk=self.job.pk).update(
+            approval_status=Job.ApprovalStatus.PENDING, description='Unapproved draft',
+        )
+        self.client.force_login(self.student)
+        detail = self.read('student-application-job', self.application.pk).json()
+        self.assertEqual(detail['listing_status'], 'unavailable')
+        self.assertFalse(detail['details_available'])
+        self.assertNotIn('description', detail)
+
     def test_company_reads_only_its_own_jobs_and_applicants(self):
         self.client.force_login(self.company.user)
         self.assertEqual(self.read('company-profile').json()['profile']['company_name'], self.company.company_name)

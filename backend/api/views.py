@@ -162,7 +162,27 @@ def own_profile_picture(request):
 def student_applications(request):
     require_role(request, User.Role.STUDENT)
     queryset = Application.objects.filter(student__user=request.user).select_related('job__company')
-    return listing(request, queryset.order_by('-applied_at', 'pk'), data.ApplicationSerializer)
+    return listing(request, queryset.order_by('-applied_at', 'pk'), data.StudentApplicationSerializer)
+
+
+@never_cache
+@api_view(['GET'])
+def student_application_job(request, pk):
+    require_role(request, User.Role.STUDENT)
+    application = get_object_or_404(
+        Application.objects.filter(student__user=request.user)
+        .select_related('job__company').prefetch_related('job__skills'),
+        pk=pk,
+    )
+    job = application.job
+    status = data.application_listing_status(job)
+    if status == 'unavailable' or not job.company.is_approved:
+        return Response({'title': job.title, 'company_name': job.company.company_name,
+                         'listing_status': status, 'details_available': False})
+    return Response({
+        **data.JobSerializer(job).data, 'description': job.description,
+        'requirements': job.requirements, 'listing_status': status, 'details_available': True,
+    })
 
 
 @api_view(['GET'])

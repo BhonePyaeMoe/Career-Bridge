@@ -93,6 +93,24 @@ class ApplicationSerializer(serializers.ModelSerializer):
                   'updated_at', 'company_message', 'interview_datetime', 'interview_location')
 
 
+def application_listing_status(job):
+    if job.approval_status == Job.ApprovalStatus.CLOSED:
+        return 'closed'
+    if job.approval_status != Job.ApprovalStatus.APPROVED or not job.company.is_approved:
+        return 'unavailable'
+    return 'open' if job.is_open else 'expired'
+
+
+class StudentApplicationSerializer(ApplicationSerializer):
+    listing_status = serializers.SerializerMethodField()
+
+    def get_listing_status(self, application):
+        return application_listing_status(application.job)
+
+    class Meta(ApplicationSerializer.Meta):
+        fields = ApplicationSerializer.Meta.fields + ('listing_status',)
+
+
 class ApplicantSerializer(ApplicationSerializer):
     full_name = serializers.CharField(source='student.full_name')
     university = serializers.CharField(source='student.university')

@@ -10,6 +10,7 @@ export const pages = [
   ['forum/:id/answers/:answer/edit', 'edit-answer'], ['forum/:id', 'question'],
   ['login', 'login'], ['register', 'register'], ['dashboard', 'dashboard'],
   ['student/profile', 'student-profile'], ['student/applications', 'student-applications'],
+  ['student/applications/:id/job', 'applied-job'],
   ['student/saved-jobs', 'saved-jobs'],
   ['company/profile', 'company-profile'], ['company/jobs', 'company-jobs'],
   ['company/jobs/new', 'new-job'], ['company/jobs/:id/edit', 'edit-job'],
@@ -54,7 +55,7 @@ const f = (name: string, title: string, type = 'text', required = true, max?: nu
 const statuses: Record<string, string[]> = {applied: ['under_review','not_selected'], under_review: ['interview_approved','not_selected']};
 const headings: Record<string, string> = {
   jobs: 'Find jobs and internships', job: 'Job details', apply: 'Apply for this role', forum: 'Career Q&A',
-  'saved-jobs': 'Saved jobs',
+  'saved-jobs': 'Saved jobs', 'applied-job': 'Job details',
   question: 'Career discussion', ask: 'Ask a question', 'edit-question': 'Edit your question', 'edit-answer': 'Edit your answer',
   login: 'Welcome back', register: 'Create your account', dashboard: 'Your dashboard',
   'student-profile': 'Student profile', 'student-applications': 'My applications', 'company-profile': 'Company profile',
@@ -112,6 +113,7 @@ export class Page implements OnInit, OnDestroy {
     };
     const details: Record<string, string> = {
       job: `jobs/${this.id}/`, apply: `jobs/${this.id}/`, question: `forum/questions/${this.id}/`,
+      'applied-job': `student/applications/${this.id}/job/`,
       'edit-question': `forum/questions/${this.id}/`, 'edit-answer': `forum/questions/${this.id}/`,
       'student-profile': 'student/profile/', 'company-profile': 'company/profile/',
       'edit-job': `company/jobs/${this.id}/`, review: `company/applications/${this.id}/`,

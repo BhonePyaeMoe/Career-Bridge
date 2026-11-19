@@ -32,6 +32,7 @@ urlpatterns = [
     path('forum/questions/<int:pk>/', views.question_detail, name='question-detail'),
     path('student/profile/', views.student_profile, name='student-profile'),
     path('student/applications/', views.student_applications, name='student-applications'),
+    path('student/applications/<int:pk>/job/', views.student_application_job, name='student-application-job'),
     path('company/profile/', views.company_profile, name='company-profile'),
     path('company/jobs/', views.company_jobs, name='company-jobs'),
     path('company/jobs/<int:job_id>/', views.company_jobs, name='company-job'),
