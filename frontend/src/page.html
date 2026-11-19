@@ -188,7 +188,33 @@
     }
 
     @if (fields().length) {
-      <form class="card form-card" autocomplete="on" (submit)="submit($event)">
+      <div [class.profile-layout]="kind === 'student-profile'">
+        @if (kind === 'student-profile') {
+          <aside class="student-profile-sidebar" aria-label="Student profile summary">
+            <div class="student-profile-identity">
+              <img [src]="api.avatarSrc()" (error)="api.useDefaultAvatar()" width="96" height="96" alt="">
+              <h2>{{record()['full_name'] || api.user()?.username || 'Your profile'}}</h2>
+              <p>{{record()['degree'] || 'Student account'}}</p>
+            </div>
+            <dl>
+              <div><dt>University</dt><dd>{{record()['university'] || 'Not specified'}}</dd></div>
+              <div><dt>CV</dt><dd>{{record()['has_cv'] ? 'On file' : 'Not uploaded'}}</dd></div>
+            </dl>
+            <a class="button secondary" routerLink="/dashboard">Back to dashboard</a>
+          </aside>
+        }
+      <form class="card form-card" [class.student-profile-form]="kind === 'student-profile'" autocomplete="on" (submit)="submit($event)">
+        @if (kind === 'student-profile') {
+          <nav class="student-profile-nav" aria-label="Student workspace">
+            <a routerLink="/student/profile" aria-current="page">Profile settings</a>
+            <a routerLink="/student/applications">My applications</a>
+            <a routerLink="/student/saved-jobs">Saved jobs</a>
+          </nav>
+          <div class="student-profile-intro">
+            <h2>Profile details</h2>
+            <p>Update your personal details, education, and application documents.</p>
+          </div>
+        }
         @if (kind === 'apply') {<h2>{{record()['title']}}</h2><p>{{record()['company_name']}}</p>}
         @if (kind === 'review') {
           <h2>{{record()['full_name']}}</h2><p>{{record()['job_title']}} · {{record()['degree']}} · {{record()['university']}}</p>
@@ -197,18 +223,22 @@
           @if (record()['cv_url']) {<p><a [href]="record()['cv_url']">Download CV</a></p>}
         }
         @if (kind === 'company-profile' && record()['approval_status']) {<p>Approval status: <span class="pill">{{label(record()['approval_status'])}}</span></p>}
-        @if (kind === 'student-profile' && record()['has_cv']) {<p class="muted">CV on file. Leave the upload field blank to keep it.</p>}
         @if (kind === 'new-job' || kind === 'edit-job') {<p class="muted">An administrator reviews new and edited listings before they appear publicly.</p>}
         @for (field of fields(); track field.name) {
-          <label>{{field.title}}
+          <label [class.student-profile-wide]="kind === 'student-profile' && (field.name === 'bio' || field.name === 'other_university')">{{field.title}}
             @switch (field.type) {
               @case ('select') { <select [name]="field.name" [required]="!!field.required" (change)="selectChanged(field.name, $any($event.target).value)">
                 <option value="">Choose an option</option>@for (option of field.choices ?? []; track option.value) {<option [value]="option.value" [selected]="fieldValue(field.name) === option.value">{{option.label}}</option>}</select> }
               @case ('textarea') {<textarea [name]="field.name" [required]="!!field.required" [value]="fieldValue(field.name)" rows="5"></textarea>}
-              @case ('file') {<input type="file" [name]="field.name" accept="application/pdf,.pdf">}
+              @case ('file') {
+                <input type="file" [name]="field.name" accept="application/pdf,.pdf">
+                @if (kind === 'student-profile' && record()['has_cv']) {<small class="muted">CV on file. Leave blank to keep it.</small>}
+              }
               @case ('image') {
-                @if (record()['profile_picture_url']; as imageUrl) {
-                  <img class="profile-picture-preview" [src]="imageUrl" [alt]="field.title">
+                @if (kind !== 'student-profile') {
+                  @if (record()['profile_picture_url']; as imageUrl) {
+                    <img class="profile-picture-preview" [src]="imageUrl" [alt]="field.title">
+                  }
                 }
                 <input type="file" [name]="field.name" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp">
                 <small class="muted">Optional · JPG, PNG or WebP, up to 2 MB.@if (record()['profile_picture_url']) { Leave blank to keep your current image.}</small>
@@ -225,6 +255,7 @@
           @if (kind === 'register') {<a routerLink="/login">Already have an account?</a>}
         </div>
       </form>
+      </div>
     }
   }
 }

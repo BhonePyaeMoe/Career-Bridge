@@ -125,3 +125,30 @@ label{display:grid;gap:.35rem;font-weight:690;font-size:.94rem;min-width:0}input
 .job-bookmark:hover,.job-bookmark.is-saved{color:var(--primary);background:#eeedff}
 .job-bookmark.is-saved svg{fill:currentColor}
 .job-bookmark:disabled{cursor:wait;opacity:.68}
+.profile-layout{display:grid;grid-template-columns:minmax(0,14rem) minmax(0,1fr);align-items:start;gap:1rem}
+.student-profile-sidebar,.student-profile-form{border:1px solid var(--line);border-radius:.9rem;background:#fff;box-shadow:0 5px 16px #2548520c;min-width:0}
+.student-profile-sidebar{overflow:hidden}
+.student-profile-identity{text-align:center;padding:1.5rem 1rem 1.25rem;background:#f8fcfc}
+.student-profile-identity img{display:block;margin:0 auto .9rem;border-radius:50%;object-fit:cover;border:3px solid #dceff1;background:var(--paper)}
+.student-profile-identity h2{font-size:1.1rem}
+.student-profile-identity p,.student-profile-sidebar dl{font-size:.875rem;color:var(--muted)}
+.student-profile-identity p{margin-top:.3rem}
+.student-profile-sidebar dl{margin:0}
+.student-profile-sidebar dl div{display:flex;justify-content:space-between;gap:.5rem;border-top:1px solid var(--line);padding:.72rem 1rem}
+.student-profile-sidebar dd{min-width:0;margin:0;text-align:right;font-weight:650;color:var(--ink);overflow-wrap:anywhere}
+.student-profile-sidebar .button{display:flex;margin:1rem;font-size:.875rem;text-align:center}
+.form-card.student-profile-form{--profile-padding:clamp(1rem,3vw,2rem);margin:0;max-width:none;padding:0 var(--profile-padding) var(--profile-padding);grid-template-columns:repeat(2,minmax(0,1fr));column-gap:1.25rem;row-gap:1.1rem}
+.student-profile-nav,.student-profile-intro,.student-profile-form .student-profile-wide,.student-profile-form fieldset,.student-profile-form .actions{grid-column:1/-1}
+.student-profile-nav{display:flex;flex-wrap:wrap;gap:0 1.35rem;margin:0 calc(-1 * var(--profile-padding));padding-inline:var(--profile-padding);border-bottom:1px solid var(--line);background:#f8fcfc;border-radius:.9rem .9rem 0 0}
+.student-profile-nav a{display:inline-flex;align-items:center;min-height:3rem;padding:.6rem .1rem .45rem;border-bottom:3px solid transparent;text-decoration:none;color:var(--muted);font-size:.875rem}
+.student-profile-nav a:hover,.student-profile-nav a[aria-current="page"]{color:var(--teal-dark);border-bottom-color:var(--teal)}
+.student-profile-intro p{margin-top:.4rem;color:var(--muted)}
+.student-profile-form>label{align-content:start}
+.student-profile-form>label small{font-weight:400;line-height:1.45}
+.student-profile-form input[type=file]{max-width:100%;font-size:.875rem}
+.student-profile-form textarea{min-height:7rem}
+.student-profile-form .actions{border-top:1px solid var(--line);padding-top:1rem}
+.student-profile-form .actions button{background:var(--teal-dark)}
+.student-profile-form .actions button:hover{background:#064d55}
+@media(max-width:780px){.profile-layout{grid-template-columns:minmax(0,1fr)}.student-profile-sidebar{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center}.student-profile-identity{grid-row:span 2}.student-profile-sidebar dl div:first-child{border-top:0}}
+@media(max-width:560px){.form-card.student-profile-form{grid-template-columns:minmax(0,1fr)}.student-profile-sidebar{display:block}.student-profile-sidebar dl div:first-child{border-top:1px solid var(--line)}.student-profile-nav{gap:0 .85rem}}
