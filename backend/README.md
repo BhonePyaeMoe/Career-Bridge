@@ -1,6 +1,6 @@
 # CareerBridge Django Project
 
-CareerBridge is a role-based internship and entry-level job platform. This version uses Django templates and Bootstrap. Angular and the REST API are intentionally left for the next stage.
+CareerBridge is a role-based internship and entry-level job platform. The Django templates and Bootstrap pages still work alongside the REST API used by the Angular client. See [API.md](API.md) for endpoints and setup.
 
 ## Included features
 
