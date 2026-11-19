@@ -1,9 +1,12 @@
 @if (kind === 'home') {
   <div class="home-page">
     <section class="landing-hero" aria-labelledby="landing-title">
-      <div class="wrap landing-hero-inner">
+      <div class="landing-hero-inner">
+        <figure class="landing-photo">
+          <img src="/assets/career-signpost.png" width="850" height="567" fetchpriority="high" alt="Three wooden signs marked Career pointing in different directions against a blue sky">
+        </figure>
         <div class="landing-copy">
-          <p class="landing-kicker"><span aria-hidden="true"></span> INTERNSHIPS &amp; ENTRY-LEVEL JOBS</p>
+          <p class="landing-kicker">Internships &amp; entry-level jobs</p>
           <h1 id="landing-title">Find your first <em>opportunity.</em></h1>
           <p class="landing-intro">Find roles that fit your skills, track your applications in one place, and get advice from the CareerBridge community.</p>
           <div class="actions landing-actions">
@@ -11,9 +14,6 @@
             <a class="button landing-outline" routerLink="/forum">Career Q&amp;A</a>
           </div>
         </div>
-        <figure class="landing-photo">
-          <img src="/assets/career-signpost.png" width="850" height="567" fetchpriority="high" alt="Three wooden signs marked Career pointing in different directions against a blue sky">
-        </figure>
       </div>
       <div class="wrap landing-trust">
         <span>Admin-approved listings</span><span>Application tracking</span><span>Community Q&amp;A</span>

@@ -21,6 +21,7 @@ export const pages = [
   <header class="top"><div class="wrap navbar">
     <a class="brand" routerLink="/" aria-label="CareerBridge home">CareerBridge<svg class="brand-accent" width="12" height="9" viewBox="0 0 12 9" aria-hidden="true"><path d="m2 7 4-5 4 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
     <nav aria-label="Main navigation">
+      <a routerLink="/" routerLinkActive="current" [routerLinkActiveOptions]="{exact: true}" ariaCurrentWhenActive="page">Home</a>
       <a routerLink="/jobs" routerLinkActive="current">Find jobs</a>
       <a routerLink="/forum" routerLinkActive="current">Career Q&amp;A</a>
       @if (api.user()) { <a routerLink="/dashboard" routerLinkActive="current">Dashboard</a> }
@@ -28,7 +29,7 @@ export const pages = [
     <div class="account">@if (api.user(); as user) {
       <img class="account-avatar" width="38" height="38" [src]="api.avatarSrc()" [alt]="user.username + ' profile picture'" (error)="api.useDefaultAvatar()">
       <button type="button" class="button small secondary" [disabled]="busy()" (click)="signOut()">Sign out</button>
-    } @else { <a class="button small" routerLink="/register">Create account</a><a routerLink="/login">Sign in</a> }</div>
+    } @else { <a routerLink="/register">Create account</a><a class="button small" routerLink="/login">Sign in</a> }</div>
   </div></header>
   <main class="wrap main" id="main"><router-outlet /></main>
   @if (issue()) { <p class="wrap error" role="alert">{{issue()}}</p> }
