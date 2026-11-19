@@ -1,0 +1,5 @@
+{% extends 'base.html' %}
+{% block title %}Applicants{% endblock %}
+{% block content %}<h1>Applicants for {{ job.title }}</h1><div class="table-responsive"><table class="table align-middle"><thead><tr><th>Student</th><th>Education</th><th>Applied</th><th>Status</th><th>CV</th><th>Action</th></tr></thead><tbody>
+{% for application in applications %}<tr><td>{{ application.student.full_name }}</td><td>{{ application.student.university }}<br>{{ application.student.degree }}</td><td>{{ application.applied_at|date:'d M Y H:i' }}</td><td>{{ application.get_status_display }}</td><td>{% if application.student.cv %}<a href="{% url 'applications:download_cv' application.student.id %}">Download PDF</a>{% else %}None{% endif %}</td><td><a class="btn btn-sm btn-primary" href="{% url 'applications:update_status' application.id %}">Review</a></td></tr>
+{% empty %}<tr><td colspan="6">No applications received.</td></tr>{% endfor %}</tbody></table></div>{% endblock %}

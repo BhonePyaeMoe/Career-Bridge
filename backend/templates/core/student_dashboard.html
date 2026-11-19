@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}Student Dashboard{% endblock %}
+{% block content %}
+<h1>Student dashboard</h1>
+<p class="text-muted">Welcome, {{ user.student_profile.full_name }}.</p>
+<div class="row g-3 mt-2">
+    <div class="col-md-4"><a class="dashboard-card" href="{% url 'jobs:list' %}"><h3>Find jobs</h3><p>Search approved opportunities.</p></a></div>
+    <div class="col-md-4"><a class="dashboard-card" href="{% url 'applications:student_list' %}"><h3>My applications</h3><p>Track application decisions.</p></a></div>
+    <div class="col-md-4"><a class="dashboard-card" href="{% url 'accounts:student_profile' %}"><h3>Edit profile</h3><p>Update education, skills, and CV.</p></a></div>
+    <div class="col-md-4"><a class="dashboard-card" href="{% url 'forum:list' %}"><h3>Career Q&amp;A</h3><p>Ask questions and share answers.</p></a></div>
+</div>
+{% endblock %}

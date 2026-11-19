@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}{{ question.title }}{% endblock %}
+{% block content %}
+<article class="card mb-4"><div class="card-body">
+    <div class="d-flex justify-content-between"><div><h1>{{ question.title }}</h1><p class="text-muted">Asked by {{ question.author.username }} ({{ question.author.get_role_display }}) · {{ question.created_at|date:'d M Y H:i' }}{% if question.updated_at != question.created_at %} · edited{% endif %}</p></div>
+    {% if user == question.author %}<a class="btn btn-sm btn-outline-primary align-self-start" href="{% url 'forum:edit' question.pk %}">Edit question</a>{% endif %}</div>
+    <div class="preline">{{ question.body }}</div>
+</div></article>
+
+<h2 class="h3">{{ answers|length }} answer{{ answers|length|pluralize }}</h2>
+{% for answer in answers %}
+<article class="card mb-3 {% if answer.is_accepted %}border-success{% endif %}"><div class="card-body">
+    {% if answer.is_accepted %}<span class="badge text-bg-success mb-2">Accepted answer</span>{% endif %}
+    <div class="preline">{{ answer.body }}</div>
+    <hr><div class="d-flex justify-content-between align-items-center"><small class="text-muted">Answered by {{ answer.author.username }} ({{ answer.author.get_role_display }}) · {{ answer.created_at|date:'d M Y H:i' }}</small><div>
+        {% if user == answer.author %}<a class="btn btn-sm btn-outline-primary" href="{% url 'forum:answer_edit' answer.pk %}">Edit</a>{% endif %}
+        {% if user == question.author and not answer.is_accepted %}<form class="d-inline" method="post" action="{% url 'forum:accept_answer' answer.pk %}">{% csrf_token %}<button class="btn btn-sm btn-outline-success">Accept answer</button></form>{% endif %}
+    </div></div>
+</div></article>
+{% empty %}<div class="alert alert-light border">No answers yet.</div>{% endfor %}
+
+{% if user.is_authenticated %}
+<div class="form-card wide mx-0 mt-4"><h2 class="h3">Write an answer</h2><form method="post" action="{% url 'forum:answer_create' question.pk %}">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary">Post answer</button></form></div>
+{% else %}<div class="alert alert-info"><a href="{% url 'login' %}?next={{ request.path }}">Log in</a> to answer this question.</div>{% endif %}
+{% endblock %}

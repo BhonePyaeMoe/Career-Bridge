@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}Find Jobs{% endblock %}
+{% block content %}
+<h1>Find jobs and internships</h1>
+<form method="get" class="card card-body mb-4">
+    <div class="row g-2">
+        <div class="col-lg-4"><input class="form-control" name="keyword" value="{{ request.GET.keyword }}" placeholder="Title, company, skill..."></div>
+        <div class="col-lg-2"><select class="form-select" name="job_type"><option value="">All job types</option>{% for value,label in job_types %}<option value="{{ value }}" {% if request.GET.job_type == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+        <div class="col-lg-2"><select class="form-select" name="work_mode"><option value="">All work modes</option>{% for value,label in work_modes %}<option value="{{ value }}" {% if request.GET.work_mode == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+        <div class="col-lg-2"><input class="form-control" name="location" value="{{ request.GET.location }}" placeholder="Location"></div>
+        <div class="col-lg-2"><select class="form-select" name="skill"><option value="">All skills</option>{% for skill in skills %}<option value="{{ skill.id }}" {% if request.GET.skill == skill.id|stringformat:'s' %}selected{% endif %}>{{ skill.name }}</option>{% endfor %}</select></div>
+        <div class="col-lg-3"><select class="form-select" name="sort"><option value="newest">Newest first</option><option value="deadline" {% if request.GET.sort == 'deadline' %}selected{% endif %}>Deadline soon</option></select></div>
+        <div class="col-lg-3"><button class="btn btn-primary">Search</button> <a class="btn btn-outline-secondary" href="{% url 'jobs:list' %}">Clear</a></div>
+    </div>
+</form>
+
+<div class="row g-3">
+{% for job in page_obj %}
+    <div class="col-md-6"><div class="card h-100 job-card"><div class="card-body">
+        <h2 class="h4"><a class="text-decoration-none" href="{% url 'jobs:detail' job.pk %}">{{ job.title }}</a></h2>
+        <p class="fw-semibold mb-1">{{ job.company.company_name }}</p>
+        <p class="text-muted">{{ job.get_job_type_display }} · {{ job.get_work_mode_display }}{% if job.location %} · {{ job.location }}{% endif %}</p>
+        {% for skill in job.skills.all %}<span class="badge text-bg-light border">{{ skill.name }}</span>{% empty %}<span class="text-muted">No skills specified</span>{% endfor %}
+        <p class="mt-3 mb-0">Deadline: {{ job.deadline }}</p>
+    </div></div></div>
+{% empty %}<div class="col-12"><div class="alert alert-info">No jobs match your search.</div></div>{% endfor %}
+</div>
+
+{% if page_obj.has_other_pages %}<nav class="mt-4"><ul class="pagination">
+    {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&keyword={{ request.GET.keyword }}&job_type={{ request.GET.job_type }}&work_mode={{ request.GET.work_mode }}&location={{ request.GET.location }}&skill={{ request.GET.skill }}&sort={{ request.GET.sort }}">Previous</a></li>{% endif %}
+    <li class="page-item active"><span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span></li>
+    {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&keyword={{ request.GET.keyword }}&job_type={{ request.GET.job_type }}&work_mode={{ request.GET.work_mode }}&location={{ request.GET.location }}&skill={{ request.GET.skill }}&sort={{ request.GET.sort }}">Next</a></li>{% endif %}
+</ul></nav>{% endif %}
+{% endblock %}

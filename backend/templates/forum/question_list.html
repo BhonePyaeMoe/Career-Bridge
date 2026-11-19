@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Career Q&A{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div><h1>Career Q&amp;A</h1><p class="text-muted mb-0">Ask and answer questions about internships, jobs, CVs, and interviews.</p></div>
+    {% if user.is_authenticated %}<a class="btn btn-primary" href="{% url 'forum:create' %}">Ask a question</a>{% endif %}
+</div>
+<form method="get" class="card card-body mb-4">
+    <div class="input-group"><input class="form-control" name="keyword" value="{{ request.GET.keyword }}" placeholder="Search questions"><button class="btn btn-primary">Search</button>{% if request.GET.keyword %}<a class="btn btn-outline-secondary" href="{% url 'forum:list' %}">Clear</a>{% endif %}</div>
+</form>
+{% for question in page_obj %}
+<article class="card mb-3"><div class="card-body">
+    <div class="d-flex justify-content-between gap-3"><div>
+        <h2 class="h4"><a class="text-decoration-none" href="{% url 'forum:detail' question.pk %}">{{ question.title }}</a></h2>
+        <p class="text-muted mb-2">Asked by {{ question.author.username }} ({{ question.author.get_role_display }}) · {{ question.created_at|date:'d M Y H:i' }}</p>
+        <p class="mb-0">{{ question.body|truncatewords:35 }}</p>
+    </div><div class="text-center"><span class="badge text-bg-primary fs-6">{{ question.visible_answer_count }}</span><div class="small text-muted">answers</div></div></div>
+</div></article>
+{% empty %}<div class="alert alert-info">No questions found.</div>{% endfor %}
+{% if page_obj.has_other_pages %}<nav><ul class="pagination">
+    {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&keyword={{ request.GET.keyword }}">Previous</a></li>{% endif %}
+    <li class="page-item active"><span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span></li>
+    {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&keyword={{ request.GET.keyword }}">Next</a></li>{% endif %}
+</ul></nav>{% endif %}
+{% endblock %}

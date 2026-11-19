@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}Student Profile{% endblock %}
+{% block content %}
+<div class="form-card wide"><h1>Student profile</h1><form method="post" enctype="multipart/form-data">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary">Save profile</button></form></div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const universitySelect = document.getElementById("id_university");
+    const otherInput = document.getElementById("id_other_university");
+    const otherParagraph = otherInput ? otherInput.closest("p") : null;
+
+    function updateOtherUniversity() {
+        if (!universitySelect || !otherParagraph) return;
+        const show = universitySelect.value === "__other__";
+        otherParagraph.style.display = show ? "block" : "none";
+        otherInput.required = show;
+        if (!show) otherInput.value = "";
+    }
+
+    universitySelect?.addEventListener("change", updateOtherUniversity);
+    updateOtherUniversity();
+});
+</script>
+{% endblock %}

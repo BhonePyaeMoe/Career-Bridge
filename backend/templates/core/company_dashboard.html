@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}Company Dashboard{% endblock %}
+{% block content %}
+<h1>Company dashboard</h1>
+<p>{{ company.company_name }} — Status: <span class="badge text-bg-{% if company.is_approved %}success{% else %}warning{% endif %}">{{ company.get_approval_status_display }}</span></p>
+{% if not company.is_approved %}<div class="alert alert-warning">An administrator must approve your company before you can create jobs.</div>{% endif %}
+<div class="row g-3 mt-2">
+    <div class="col-md-4"><a class="dashboard-card" href="{% url 'jobs:company_jobs' %}"><h3>My jobs</h3><p>View jobs and applicants.</p></a></div>
+    {% if company.is_approved %}<div class="col-md-4"><a class="dashboard-card" href="{% url 'jobs:create' %}"><h3>Create job</h3><p>Submit a vacancy for approval.</p></a></div>{% endif %}
+    <div class="col-md-4"><a class="dashboard-card" href="{% url 'companies:profile' %}"><h3>Edit company</h3><p>Update company information.</p></a></div>
+    <div class="col-md-4"><a class="dashboard-card" href="{% url 'forum:list' %}"><h3>Career Q&amp;A</h3><p>Answer student questions and join discussions.</p></a></div>
+</div>
+{% endblock %}

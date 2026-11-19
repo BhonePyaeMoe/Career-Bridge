@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}CareerBridge{% endblock %}
+{% block content %}
+<section class="hero rounded-4 p-5 mb-5">
+    <div class="row align-items-center">
+        <div class="col-lg-7">
+            <h1 class="display-5 fw-bold">Connect students with the right opportunities</h1>
+            <p class="lead">Find approved internships and entry-level jobs or recruit students through a clear application workflow.</p>
+            <a class="btn btn-primary btn-lg" href="{% url 'jobs:list' %}">Browse jobs</a>
+            {% if not user.is_authenticated %}<a class="btn btn-outline-primary btn-lg ms-2" href="{% url 'accounts:register' %}">Join now</a>{% endif %}
+        </div>
+    </div>
+</section>
+<div class="row g-4">
+    <div class="col-md-4"><div class="card h-100 p-3"><h3>For students</h3><p>Build a profile, select skills, apply once, and track every decision.</p></div></div>
+    <div class="col-md-4"><div class="card h-100 p-3"><h3>For companies</h3><p>Publish approved jobs and manage applicants securely.</p></div></div>
+    <div class="col-md-4"><div class="card h-100 p-3"><h3>Trusted content</h3><p>Companies and vacancies are reviewed by an administrator.</p></div></div>
+</div>
+{% endblock %}

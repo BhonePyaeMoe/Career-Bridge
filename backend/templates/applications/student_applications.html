@@ -1,0 +1,5 @@
+{% extends 'base.html' %}
+{% block title %}My Applications{% endblock %}
+{% block content %}<h1>My applications</h1><div class="table-responsive"><table class="table align-middle"><thead><tr><th>Job</th><th>Company</th><th>Applied</th><th>Status</th><th>Message / Interview</th></tr></thead><tbody>
+{% for application in applications %}<tr><td><a href="{% url 'jobs:detail' application.job.id %}">{{ application.job.title }}</a></td><td>{{ application.job.company.company_name }}</td><td>{{ application.applied_at|date:'d M Y' }}</td><td><span class="badge text-bg-info">{{ application.get_status_display }}</span></td><td>{% if application.company_message %}{{ application.company_message }}{% endif %}{% if application.status == 'interview_approved' %}<div><strong>{{ application.interview_datetime }}</strong><br>{{ application.interview_location }}</div>{% endif %}</td></tr>
+{% empty %}<tr><td colspan="5">You have not applied for any jobs.</td></tr>{% endfor %}</tbody></table></div>{% endblock %}

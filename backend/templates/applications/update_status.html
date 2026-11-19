@@ -1,0 +1,3 @@
+{% extends 'base.html' %}
+{% block title %}Review Application{% endblock %}
+{% block content %}<div class="form-card wide"><h1>Review application</h1><p><strong>{{ application.student.full_name }}</strong> applied for {{ application.job.title }}.</p><div class="alert alert-info">Allowed flow: Applied → Under Review/Not Selected → Interview Approved/Not Selected.</div><form method="post">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary">Update status</button></form></div>{% endblock %}

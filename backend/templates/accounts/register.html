@@ -1,0 +1,5 @@
+{% extends 'base.html' %}
+{% block title %}Create Account{% endblock %}
+{% block content %}
+<div class="form-card"><h1>Create account</h1><p class="text-muted">Choose Student or Company, then complete the matching profile.</p><form method="post">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary w-100">Create account</button></form></div>
+{% endblock %}
