@@ -99,7 +99,7 @@
                 <p class="meta">{{row['author']}} · {{row['created_at'] | date:'mediumDate'}} · {{row['answer_count']}} replies</p>
               }
               @case ('student-applications') {
-                <span class="pill">{{label(row['status'])}}</span><h2>{{row['job_title']}}</h2><p>{{row['company_name']}} · Applied {{row['applied_at'] | date:'mediumDate'}}</p>
+                <span class="pill application-status" [attr.data-status]="row['status']">{{label(row['status'])}}</span><h2>{{row['job_title']}}</h2><p>{{row['company_name']}} · Applied {{row['applied_at'] | date:'mediumDate'}}</p>
                 @if (row['company_message']) {<p class="prose"><strong>Company message:</strong> {{row['company_message']}}</p>}
                 @if (row['interview_datetime']) {<p><strong>Interview:</strong> {{row['interview_datetime'] | date:'medium':'+0700'}} ICT · {{row['interview_location']}}</p>}
               }
@@ -109,7 +109,7 @@
                   @if (row['approval_status'] !== 'closed') { <button class="button secondary" type="button" [disabled]="busy()" (click)="submit($event,'close',row['id'])">Close listing</button> }</div>
               }
               @case ('applicants') {
-                <span class="pill">{{label(row['status'])}}</span><h2>{{row['full_name']}}</h2><p>{{row['degree']}} · {{row['university']}}</p>
+                <span class="pill application-status" [attr.data-status]="row['status']">{{label(row['status'])}}</span><h2>{{row['full_name']}}</h2><p>{{row['degree']}} · {{row['university']}}</p>
                 <div class="actions"><a class="button secondary" [routerLink]="['/company/applications',row['id']]">Review application</a>@if (row['cv_url']) {<a [href]="row['cv_url']">Download CV</a>}</div>
               }
             }
@@ -168,17 +168,29 @@
     @if (fields().length) {
       <form class="card form-card" autocomplete="on" (submit)="submit($event)">
         @if (kind === 'apply') {<h2>{{record()['title']}}</h2><p>{{record()['company_name']}}</p>}
-        @if (kind === 'review') {<h2>{{record()['full_name']}}</h2><p>{{record()['job_title']}} · {{record()['degree']}} · {{record()['university']}}</p>@if (record()['cover_message']) {<p class="prose">{{record()['cover_message']}}</p>}@if (record()['cv_url']) {<p><a [href]="record()['cv_url']">Download CV</a></p>}}
+        @if (kind === 'review') {
+          <h2>{{record()['full_name']}}</h2><p>{{record()['job_title']}} · {{record()['degree']}} · {{record()['university']}}</p>
+          @if (record()['status']; as currentStatus) {<p>Current status: <span class="pill application-status" [attr.data-status]="currentStatus">{{label(currentStatus)}}</span></p>}
+          @if (record()['cover_message']) {<p class="prose">{{record()['cover_message']}}</p>}
+          @if (record()['cv_url']) {<p><a [href]="record()['cv_url']">Download CV</a></p>}
+        }
         @if (kind === 'company-profile' && record()['approval_status']) {<p>Approval status: <span class="pill">{{label(record()['approval_status'])}}</span></p>}
         @if (kind === 'student-profile' && record()['has_cv']) {<p class="muted">CV on file. Leave the upload field blank to keep it.</p>}
         @if (kind === 'new-job' || kind === 'edit-job') {<p class="muted">An administrator reviews new and edited listings before they appear publicly.</p>}
         @for (field of fields(); track field.name) {
           <label>{{field.title}}
             @switch (field.type) {
-              @case ('select') { <select [name]="field.name" [required]="!!field.required" (change)="field.name === 'university' && otherUniversity.set($any($event.target).value === '__other__')">
+              @case ('select') { <select [name]="field.name" [required]="!!field.required" (change)="selectChanged(field.name, $any($event.target).value)">
                 <option value="">Choose an option</option>@for (option of field.choices ?? []; track option.value) {<option [value]="option.value" [selected]="fieldValue(field.name) === option.value">{{option.label}}</option>}</select> }
               @case ('textarea') {<textarea [name]="field.name" [required]="!!field.required" [value]="fieldValue(field.name)" rows="5"></textarea>}
               @case ('file') {<input type="file" [name]="field.name" accept="application/pdf,.pdf">}
+              @case ('image') {
+                @if (record()['profile_picture_url']; as imageUrl) {
+                  <img class="profile-picture-preview" [src]="imageUrl" [alt]="field.title">
+                }
+                <input type="file" [name]="field.name" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp">
+                <small class="muted">Optional · JPG, PNG or WebP, up to 2 MB.@if (record()['profile_picture_url']) { Leave blank to keep your current image.}</small>
+              }
               @default {<input [type]="field.type || 'text'" [name]="field.name" [required]="!!field.required" [value]="fieldValue(field.name)" [attr.maxlength]="field.max ?? null" [attr.autocomplete]="field.name === 'username' ? 'username' : field.name === 'password' ? 'current-password' : field.name.startsWith('password') ? 'new-password' : null">}
             }
           </label>

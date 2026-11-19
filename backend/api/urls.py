@@ -21,6 +21,7 @@ urlpatterns = [
     path('forum/answers/<int:pk>/save/', actions.save_answer, name='answer-save'),
     path('forum/answers/<int:pk>/accept/', actions.accept_answer, name='answer-accept'),
     path('auth/session/', views.session, name='session'),
+    path('profile/picture/', views.own_profile_picture, name='own-profile-picture'),
     path('options/', views.options, name='options'),
     path('jobs/', views.job_list, name='job-list'),
     path('jobs/<int:pk>/', views.job_detail, name='job-detail'),

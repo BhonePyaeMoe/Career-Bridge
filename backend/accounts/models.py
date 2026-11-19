@@ -4,6 +4,8 @@ from django.db import models
 from pathlib import Path
 from uuid import uuid4
 
+from core.profile_images import profile_picture_validators, student_picture_path
+
 
 def validate_file_size(value):
     if value.size > 5 * 1024 * 1024:
@@ -37,7 +39,15 @@ class StudentProfile(models.Model):
     phone = models.CharField(max_length=30, blank=True)
     bio = models.TextField(blank=True)
     cv = models.FileField(upload_to=cv_upload_path, blank=True, validators=[FileExtensionValidator(["pdf"]), validate_file_size])
+    profile_picture = models.ImageField(
+        upload_to=student_picture_path, blank=True, max_length=255,
+        validators=profile_picture_validators,
+    )
     skills = models.ManyToManyField("jobs.Skill", blank=True, related_name="students")
+
+    @property
+    def profile_is_complete(self):
+        return all((self.full_name, self.university, self.degree))
 
     def __str__(self):
         return self.full_name

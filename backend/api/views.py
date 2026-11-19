@@ -2,6 +2,7 @@ from django.db.models import Count, Prefetch, Q
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.views.decorators.cache import never_cache
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 from rest_framework.pagination import PageNumberPagination
@@ -114,6 +115,27 @@ def company_profile(request):
     require_role(request, User.Role.COMPANY)
     profile = Company.objects.filter(user=request.user).first()
     return Response({'profile': data.CompanyProfileSerializer(profile).data if profile else None})
+
+
+@never_cache
+@api_view(['GET'])
+def own_profile_picture(request):
+    if request.user.role == User.Role.STUDENT:
+        model = StudentProfile
+    elif request.user.role == User.Role.COMPANY:
+        model = Company
+    else:
+        raise PermissionDenied()
+    picture = get_object_or_404(model, user=request.user).profile_picture
+    if not picture or not picture.name.endswith('.webp'):
+        raise NotFound('No profile image available.')
+    try:
+        response = FileResponse(picture.open('rb'), content_type='image/webp')
+    except FileNotFoundError as exc:
+        raise NotFound('The profile image is unavailable.') from exc
+    response['Cache-Control'] = 'private, no-store'
+    response['X-Content-Type-Options'] = 'nosniff'
+    return response
 
 
 @api_view(['GET'])

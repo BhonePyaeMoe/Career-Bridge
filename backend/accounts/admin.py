@@ -13,6 +13,7 @@ class CustomUserAdmin(UserAdmin):
 
 @admin.register(StudentProfile)
 class StudentProfileAdmin(admin.ModelAdmin):
+    exclude = ("profile_picture",)
     list_display = ["full_name", "user", "university", "degree"]
     search_fields = ["full_name", "user__username", "university"]
 

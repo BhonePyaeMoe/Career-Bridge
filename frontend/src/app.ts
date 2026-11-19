@@ -78,6 +78,7 @@ export class Page implements OnInit, OnDestroy {
   formErrors = signal<string[]>([]);
   notice = signal('');
   otherUniversity = signal(false);
+  registerRole = signal('student');
   label = label;
 
   ngOnInit() {
@@ -144,14 +145,16 @@ export class Page implements OnInit, OnDestroy {
       case 'login': return [f('username','Username'), f('password','Password','password')];
       case 'register': return [f('username','Username'), f('email','Email','email'), select('role','Account type', [
         {value:'student',label:'Student'},{value:'company',label:'Company'}]),
-        f('password1','Password','password'),f('password2','Confirm password','password')];
+        f('password1','Password','password'),f('password2','Confirm password','password'),
+        f('profile_picture',this.registerRole() === 'company' ? 'Company logo' : 'Profile photo','image',false)];
       case 'student-profile': return [f('full_name','Full name','text',true,150),
         select('university','University', opts?.universities.filter(x => x.value) ?? []),
         ...(this.otherUniversity() ? [f('other_university','University name','text',true,150)] : []),
         f('degree','Degree','text',true,150),f('phone','Phone','tel',false,30),f('bio','Bio','textarea',false),
-        f('cv','CV (PDF, up to 5 MB)','file',false)];
+        f('cv','CV (PDF, up to 5 MB)','file',false),f('profile_picture','Profile photo','image',false)];
       case 'company-profile': return [f('company_name','Company name','text',true,150),f('industry','Industry','text',true,100),
-        f('website','Website','url',false),f('phone','Phone','tel',true,30),f('description','Description','textarea'),f('address','Address','textarea')];
+        f('website','Website','url',false),f('phone','Phone','tel',true,30),f('description','Description','textarea'),f('address','Address','textarea'),
+        f('profile_picture','Company logo','image',false)];
       case 'new-job': case 'edit-job': return [f('title','Job title','text',true,150),
         select('job_type','Job type',opts?.job_types ?? []),select('work_mode','Work mode',opts?.work_modes ?? []),
         f('location','Location (required for on-site and hybrid)','text',false,150),f('deadline','Deadline','date'),
@@ -169,13 +172,21 @@ export class Page implements OnInit, OnDestroy {
     }
   }
 
-  fieldValue(name: string) { return this.record()[name] ?? (name === 'role' ? 'student' : ''); }
+  fieldValue(name: string) { return this.record()[name] ?? (name === 'role' ? this.registerRole() : ''); }
+  selectChanged(name: string, value: string) {
+    if (name === 'university') this.otherUniversity.set(value === '__other__');
+    if (name === 'role') this.registerRole.set(value);
+  }
   hasSkill(id: number) { return (this.record()['skills'] ?? []).some((skill: Row) => skill['id'] === id); }
   async submit(event: Event, action = 'main', target?: number) {
     event.preventDefault();
     if (this.busy()) return;
-    const form = event.currentTarget instanceof HTMLFormElement ? new FormData(event.currentTarget) : new FormData();
-    if (form.get('cv') instanceof File && !(form.get('cv') as File).size && !(form.get('cv') as File).name) form.delete('cv');
+    const element = event.currentTarget instanceof HTMLFormElement ? event.currentTarget : null;
+    const form = element ? new FormData(element) : new FormData();
+    for (const key of ['cv', 'profile_picture']) {
+      const file = form.get(key);
+      if (file instanceof File && !file.size && !file.name) form.delete(key);
+    }
     const endpoints: Record<string, string> = {
       login:'auth/login/', register:'auth/register/', 'student-profile':'student/profile/save/',
       'company-profile':'company/profile/save/', apply:`jobs/${this.id}/apply/`,
@@ -189,6 +200,8 @@ export class Page implements OnInit, OnDestroy {
     this.busy.set(true); this.formErrors.set([]); this.notice.set('');
     try {
       const response = await this.api.post(path, form);
+      const pictureInput = element?.querySelector<HTMLInputElement>('input[name="profile_picture"]');
+      if (pictureInput) pictureInput.value = '';
       let next = '';
       if (['login','register'].includes(this.kind)) {
         await this.api.session();

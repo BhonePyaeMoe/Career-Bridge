@@ -11,17 +11,16 @@ from rest_framework.decorators import api_view
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
-from accounts.forms import RegistrationForm, StudentProfileForm
 from accounts.models import StudentProfile, User
 from applications.forms import ApplicationForm, ApplicationStatusForm
 from applications.models import Application
-from companies.forms import CompanyForm
 from companies.models import Company
 from core.models import AuditLog
 from forum.forms import AnswerForm, QuestionForm
 from forum.models import Answer, Question
 from jobs.forms import JobForm
 from jobs.models import Job
+from .profile_pictures import ImageCompanyForm, ImageRegistrationForm, ImageStudentProfileForm
 from .views import owned_applications, public_jobs, require_role
 
 
@@ -58,13 +57,16 @@ def sign_in(request):
 def register(request):
     if request.user.is_authenticated:
         return JsonResponse({'detail': 'Sign out before creating a new account.'}, status=400)
-    form = RegistrationForm(request.POST)
+    form = ImageRegistrationForm(request.POST, request.FILES)
     if not form.is_valid():
         return JsonResponse({'errors': errors(form)}, status=400)
     try:
         with transaction.atomic():
             user = form.save()
             audit(user, 'account_registered', user)
+            if picture := form.cleaned_data['profile_picture']:
+                model = StudentProfile if user.role == User.Role.STUDENT else Company
+                model.objects.create(user=user, profile_picture=picture)
     except IntegrityError:
         return JsonResponse({'detail': 'An account already uses that username or email.'}, status=409)
     login(request, user)
@@ -80,25 +82,38 @@ def sign_out(request):
 
 
 @api_view(['POST'])
+@transaction.atomic
 def save_student_profile(request):
     require_role(request, User.Role.STUDENT)
+    User.objects.select_for_update(no_key=True).get(pk=request.user.pk)
     profile = StudentProfile.objects.filter(user=request.user).first() or StudentProfile(user=request.user)
-    form = StudentProfileForm(request.data, request.FILES, instance=profile)
+    old_picture = profile.profile_picture
+    form = ImageStudentProfileForm(request.data, request.FILES, instance=profile)
     if not form.is_valid():
         return Response({'errors': errors(form)}, status=400)
-    form.save()
+    saved = form.save()
+    retire_picture(old_picture, saved.profile_picture)
     return Response({'ok': True})
 
 
 @api_view(['POST'])
+@transaction.atomic
 def save_company_profile(request):
     require_role(request, User.Role.COMPANY)
-    profile = Company.objects.filter(user=request.user).first() or Company(user=request.user)
-    form = CompanyForm(request.data, instance=profile)
+    User.objects.select_for_update(no_key=True).get(pk=request.user.pk)
+    profile = Company.objects.select_for_update().filter(user=request.user).first() or Company(user=request.user)
+    old_picture = profile.profile_picture
+    form = ImageCompanyForm(request.data, request.FILES, instance=profile)
     if not form.is_valid():
         return Response({'errors': errors(form)}, status=400)
-    form.save()
+    saved = form.save()
+    retire_picture(old_picture, saved.profile_picture)
     return Response({'ok': True})
+
+
+def retire_picture(old, current):
+    if old and old.name != current.name:
+        transaction.on_commit(lambda: old.storage.delete(old.name), robust=True)
 
 
 @api_view(['POST'])
@@ -135,7 +150,7 @@ def close_job(request, pk):
 def apply(request, pk):
     require_role(request, User.Role.STUDENT)
     student = StudentProfile.objects.filter(user=request.user).first()
-    if student is None:
+    if student is None or not student.profile_is_complete:
         return Response({'detail': 'Complete your student profile before applying.'}, status=400)
     form = ApplicationForm(request.data)
     if not form.is_valid():

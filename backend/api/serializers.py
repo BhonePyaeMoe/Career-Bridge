@@ -1,3 +1,5 @@
+from hashlib import sha256
+
 from django.urls import reverse
 from rest_framework import serializers
 
@@ -36,7 +38,17 @@ class CompanyJobSerializer(JobSerializer):
         fields = JobSerializer.Meta.fields + ('description', 'requirements', 'approval_status')
 
 
-class StudentProfileSerializer(serializers.ModelSerializer):
+class ProfilePictureSerializer(serializers.ModelSerializer):
+    profile_picture_url = serializers.SerializerMethodField()
+
+    def get_profile_picture_url(self, obj):
+        if not obj.profile_picture or not obj.profile_picture.name.endswith('.webp'):
+            return None
+        version = sha256(obj.profile_picture.name.encode()).hexdigest()[:16]
+        return f"{reverse('api:own-profile-picture')}?v={version}"
+
+
+class StudentProfileSerializer(ProfilePictureSerializer):
     skills = SkillSerializer(many=True)
     has_cv = serializers.SerializerMethodField()
 
@@ -45,14 +57,14 @@ class StudentProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = StudentProfile
-        fields = ('full_name', 'university', 'degree', 'phone', 'bio', 'skills', 'has_cv')
+        fields = ('full_name', 'university', 'degree', 'phone', 'bio', 'skills', 'has_cv', 'profile_picture_url')
 
 
-class CompanyProfileSerializer(serializers.ModelSerializer):
+class CompanyProfileSerializer(ProfilePictureSerializer):
     class Meta:
         model = Company
         fields = ('company_name', 'industry', 'website', 'phone', 'description', 'address',
-                  'approval_status')
+                  'approval_status', 'profile_picture_url')
 
 
 class ApplicationSerializer(serializers.ModelSerializer):

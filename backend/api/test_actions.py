@@ -73,7 +73,7 @@ class AngularWriteApiTests(TestCase):
         self.assertEqual(job.approval_status, 'pending')
         self.assertEqual(self.browser.get(reverse('api:job-list')).json()['count'], 0)
         Job.objects.filter(pk=job.pk).update(approval_status='approved')  # Simulates admin approval.
-        StudentProfile.objects.create(user=self.student, full_name='Test Student')
+        StudentProfile.objects.create(user=self.student, full_name='Test Student', university='AIT', degree='Computing')
         self.sign_in(self.student)
         response = self.post('apply', {'cover_message': 'Interested'}, job.pk)
         self.assertEqual(response.status_code, 201, response.content)

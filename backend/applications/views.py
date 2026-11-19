@@ -17,6 +17,9 @@ def apply(request, job_id):
     if request.user.role != User.Role.STUDENT:
         raise PermissionDenied
     student = get_object_or_404(StudentProfile, user=request.user)
+    if not student.profile_is_complete:
+        messages.info(request, "Complete your student profile before applying.")
+        return redirect("accounts:student_profile")
     job = get_object_or_404(Job, pk=job_id)
     if not job.is_open:
         messages.error(request, "This job is not open for applications.")

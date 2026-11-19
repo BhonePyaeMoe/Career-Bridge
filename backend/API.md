@@ -21,9 +21,10 @@ Try `/api/jobs/`, `/api/options/`, and `/api/forum/questions/` in the browser. T
 | Public | `/api/jobs/{id}/` | Job details and `already_applied` for the current visitor |
 | Public | `/api/forum/questions/` | Visible questions and their visible answer counts |
 | Public | `/api/forum/questions/{id}/` | Visible question and its visible answers |
-| Student | `/api/student/profile/` | Own profile in `profile`, or `null` if not completed |
+| Student | `/api/student/profile/` | Own profile (including any saved photo URL) in `profile`, or `null` if no profile exists |
 | Student | `/api/student/applications/` | Own applications, statuses and interview information |
-| Company | `/api/company/profile/` | Own profile in `profile`, or `null` if not completed |
+| Company | `/api/company/profile/` | Own profile (including any saved logo URL) in `profile`, or `null` if no profile exists |
+| Student or company | `/api/profile/picture/` | Signed-in account's own photo or logo; never returns another account's image |
 | Company | `/api/company/jobs/` and `/api/company/jobs/{id}/` | Own job listings and job edit-form data |
 | Company | `/api/company/jobs/{id}/applicants/` | Applicants for the company's own job |
 | Company | `/api/company/applications/{id}/` | Application review data, including a protected `cv_url` if present |
@@ -44,6 +45,8 @@ Angular calls `GET /api/auth/csrf/` first. Django issues the `csrftoken` cookie,
 | Update application status | `/api/company/applications/{id}/review/` |
 | Create or edit a question | `/api/forum/questions/create/`, `/api/forum/questions/{id}/save/` |
 | Post, edit or accept an answer | `/api/forum/questions/{id}/answer/`, `/api/forum/answers/{id}/save/`, `/api/forum/answers/{id}/accept/` |
+
+Registration and both profile-save endpoints accept an optional multipart `profile_picture` file (JPG, PNG or WebP, up to 2 MB). Omitting it on edit keeps the current image. An image at signup does not complete the profile or change approval requirements.
 
 The application and company review APIs enforce the same role, ownership and status rules as Django. New or edited listings require approval in Django Admin. Approval and forum moderation remain in Django Admin.
 
