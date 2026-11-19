@@ -222,7 +222,7 @@
         <p class="meta">Application deadline: {{record()['deadline'] | date:'mediumDate':'UTC'}}</p>
         <h3>Description</h3><p class="prose">{{record()['description']}}</p><h3>Requirements</h3><p class="prose">{{record()['requirements']}}</p>
         <div class="tags">@for(skill of record()['skills']; track skill.id) {<span>{{skill.name}}</span>}</div>
-        <div class="actions">@if (record()['already_applied']) {<a class="button secondary" routerLink="/student/applications">View my application</a>}
+        <div class="actions job-detail-actions">@if (record()['already_applied']) {<a class="button secondary" routerLink="/student/applications">View my application</a>}
           @else if (api.user()?.role === 'student') {<a class="button" [routerLink]="['/jobs',id,'apply']">Apply now</a>}
           @else if (!api.user()) {<a class="button" routerLink="/login">Sign in to apply</a>}</div>
       </article>

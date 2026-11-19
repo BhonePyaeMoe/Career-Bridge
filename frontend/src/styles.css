@@ -191,3 +191,7 @@ label{display:grid;gap:.35rem;font-weight:690;font-size:.94rem;min-width:0}input
   .job-search.card{grid-template-columns:repeat(2,minmax(0,1fr))}
   .job-search .search-keyword,.job-search label:nth-of-type(6){grid-column:1/-1}
 }
+
+.detail > .job-detail-actions {
+  margin-top: 1.25rem;
+}
