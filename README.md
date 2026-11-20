@@ -44,9 +44,9 @@ The suite uses local test settings. It covers role and ownership checks, listing
 
 To check the frontend build, run npm run build from frontend/ after installing dependencies.
 Project layout
-- [`frontend/`](frontend/) — Angular pages and components
-- [`backend/`](backend/) — Django models, REST API, Django Admin, and automated tests
-- [`backend/API.md`](backend/API.md) — API reference
+- (frontend/) — Angular pages and components
+- (backend/) — Django models, REST API, Django Admin, and automated tests
+- (backend/API.md) — API reference
 Planned improvements
 - Send email notifications for application status changes and interview updates.
 - Highlight jobs based on how many required skills match the student’s profile, and show the match count
